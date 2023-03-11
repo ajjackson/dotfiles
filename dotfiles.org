@@ -1,0 +1,31 @@
+#+NAME: guess-system
+#+BEGIN_SRC emacs-lisp
+  (setq system
+    (let ((hostname (system-name)))
+     (cond ((member hostname '("Angel" "Angel.lan" "Angel.local")) "Angel")
+           ((member hostname '("ajj-mbp-1" "ajj-mbp-1.local"
+                               "dock-ajj-mbp-1" "dock-ajj-mbp-1.esc.rl.ac.uk"))
+            "ajj-mbp-1")
+           ('t hostname))
+     ))
+#+END_SRC
+
+#+RESULTS: guess-system
+: Arctopus
+
+#+begin_src conf :mkdirp yes :tangle "test/demo"
+This is great
+#+end_src
+
+#+begin_src conf :tangle (if (member system '("Arctopus" "DreamMachine")) "test/demo" "no")
+for music
+#+end_src
+
+#+begin_src conf :mkdirp yes :tangle (if (not (member system '("Arctopus" "DreamMachine"))) "test/demo" "no")
+for sports
+#+end_src
+
+
+# Local Variables:
+# eval: (progn (org-babel-goto-named-src-block "guess-system") (org-babel-execute-src-block) (outline-hide-sublevels 1))
+# End:
