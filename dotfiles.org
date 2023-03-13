@@ -5,21 +5,19 @@ used in =:tangle= arguments. It will be run automatically at document
 load due to local variables set at the bottom of this file; the user
 probabably needs to authorise this with 'y'.
 
-When tangling this file from a script in batch mode, the local
-variables will be ignored so instead the file should be included with
-=emacs -Q --batch -l get-environment.el ...=.
+#+name: guess-system
+#+begin_src emacs-lisp
+(setq system
+      (let ((hostname (system-name)))
+        (cond ((member hostname '("Angel" "Angel.lan" "Angel.local")) "Angel")
+              ((member hostname '("ajj-mbp-1" "ajj-mbp-1.local"
+                                  "dock-ajj-mbp-1" "dock-ajj-mbp-1.esc.rl.ac.uk"))
+               "ajj-mbp-1")
+              ('t hostname))
+        ))
+#+end_src
 
-#+NAME: guess-system
-#+BEGIN_SRC emacs-lisp
-  (let ((this-dir (file-name-directory
-                   (if load-file-name load-filename buffer-file-name))))
-   (load (expand-file-name "get-environment.el" this-dir) ))
-#+END_SRC
-
-Perhaps it would be simpler to just put that code into the main
-setup/build script, and have that be an elisp script with the
-=#!emacs --script= shebang line. It does seem useful to be able
-to get the same environment in interactive org sessions though?
+* Dummy files
 
 #+begin_src conf :mkdirp yes :tangle "test/demo"
 This is great
@@ -34,6 +32,7 @@ for sports
 #+end_src
 
 
+* End matter
 
 # Use M-x normal-mode to re-run local variables/eval and set the environment for tangle logic
 
