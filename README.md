@@ -26,7 +26,7 @@ Things to try differently
 
     - Consider using `stow` to distribute files that have system-dependent locations:
         - org-babel can tangle to a standard tree within a temporary director or this source folder
-        - then call `stow -t /suitable/root/position` to copy them
+        - then call `stow -t /suitable/root/position [packages]` to copy them
 
 Things that remain a bit of a headache
 ======================================
