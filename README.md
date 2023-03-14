@@ -45,6 +45,7 @@ Things that remain a bit of a headache
 Instructions
 ============
 
+- If using i3, make sure local paths are visible. (i.e. add ~/.local/bin to PATH in ~/.profile)
 - `./make.el` to tangle dotfiles to directories
 - `stow -t $HOME i3` to symlink things to ~/.config and ~/.local/bin
   - Once there are more packages and machines set up, this should be
