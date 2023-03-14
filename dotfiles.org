@@ -52,10 +52,6 @@ exec --no-startup-id dex-autostart --autostart --environment i3
 # Hide titlebars unless tabbing/stacking
 for_window [class="^.*"] border none
 
-# xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
-# screen before suspend. Use loginctl lock-session to lock your screen.
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
-
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
@@ -246,6 +242,56 @@ This is system-dependent, use xrandr commands to rotate and position monitors
   workspace 1 output HDMI-0
   workspace 2 output DVI-D-0
 #+end_src
+
+** Screen lock, suspend etc.
+#+begin_src conf
+  # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
+  # screen before suspend. Use loginctl lock-session to lock your screen.
+  exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+
+#+end_src
+
+We also create a shell script for screen lock, shutdown etc, borrowed from
+https://faq.i3wm.org/question/239/how-do-i-suspendlockscreen-and-logout.1.html
+
+#+begin_src sh :tangle i3/.local/bin/i3exit :mkdirp yes :shebang "#!/bin/sh"
+  lock() {
+      i3lock
+  }
+
+  case "$1" in
+      lock)
+          lock
+          ;;
+      logout)
+          i3-msg exit
+          ;;
+      suspend)
+          systemctl suspend
+          ;;
+      hibernate)
+          systemctl hibernate
+          ;;
+      reboot)
+          systemctl reboot
+          ;;
+      shutdown)
+          systemctl poweroff
+          ;;
+      ,*)
+          echo "Usage: $0 {lock|logout|suspend|hibernate|reboot|shutdown}"
+          exit 2
+  esac
+
+  exit 0
+#+end_src
+
+But instead of using an i3 mode, try using dmenu
+
+#+begin_src conf 
+  bindsym $mod+c exec echo -e "lock\nlogout\nsuspend\nhibernate\nreboot\nshutdown" | dmenu "$@" | xargs $HOME/.local/bin/i3exit
+#+end_src
+
 
 ** Launch some more programs and services
 #+begin_src conf :tangle "i3/.config/i3/config"
