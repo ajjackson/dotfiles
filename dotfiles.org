@@ -18,12 +18,11 @@ probabably needs to authorise this with 'y'.
 
   ;; Centering, rows only supported for patched dmenu
   (setq dmenu-patched-p
-        (cond ((member system '("Arctopus")) 't)
+        (cond ((member system '("Arctopus" "scpc041")) 't)
               ('t nil)))
 #+end_src
 
 #+RESULTS: guess-system
-: t
 
 * Dummy files
 
@@ -220,25 +219,29 @@ gaps inner 4
 
 ** Dmenu
 On patched systems, use a modified dmenu_run
-#+begin_src sh :shebang "#!/bin/sh" :tangle (if dmenu-patched-p "i3/.local/bin/dmenu_run" "no")
+#+begin_src sh :mkdirp yes :shebang "#!/bin/sh" :tangle (if dmenu-patched-p "i3/.local/bin/dmenu_run" "no")
 dmenu_path | dmenu -c -l 6 -g 3 "$@" | ${SHELL:-"/bin/sh"} &
 #+end_src
 
+#+RESULTS:
+
 Launch dmenu or i3-dmenu-desktop with shortcuts
 
-#+begin_src conf :tangle (if dmenu-patched-p "i3/.config/i3/config" "no")
+#+NAME: get_dmenu_args
+#+BEGIN_SRC emacs-lisp
+  (if dmenu-patched "-c -l 6 -g 3" "")
+#+END_SRC
+
+#+begin_src conf :noweb yes
   bindsym $mod+d exec --no-startup-id dmenu_run
-  bindsym $mod+Shift+d exec --no-startup-id i3-dmenu-desktop --dmenu='dmenu -i -c -l 6 -g 3'
-#+end_src
-#+begin_src conf :tangle (if dmenu-patched-p "no" "i3/.config/i3/config")
-  # start dmenu (a program launcher)
-  bindsym $mod+d exec --no-startup-id dmenu_run
-  bindsym $mod+Shift+d exec --no-startup-id i3-dmenu-desktop
+  bindsym $mod+Shift+d exec --no-startup-id i3-dmenu-desktop --dmenu='dmenu -i <<get_dmenu_args()>>'
 #+end_src
 
 
 ** Compositing
 Use picom (may not be available on all systems)
+- on scpc041 this is started by =/etc/xdg/autostart/picom.desktop= so
+  redundant to also include in i3 config
 
 #+begin_src conf :tangle (if (equal system "Arctopus") "i3/.config/i3/config" "no")
 # Enable compositing (i.e. for transparent terminals)
@@ -260,46 +263,51 @@ This is system-dependent, use xrandr commands to rotate and position monitors
 #+end_src
 
 ** Screen lock, suspend etc.
-#+begin_src conf
+
+#+NAME: get_wallpaper_args
+#+BEGIN_SRC emacs-lisp
+  (if (equal system "scpc041") "-i /usr/share/backgrounds/f34/default/f34-02-night.png" "")
+#+END_SRC
+
+#+begin_src conf :noweb yes
   # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
   # screen before suspend. Use loginctl lock-session to lock your screen.
-  exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
-
+  exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork <<get_wallpaper_args()>>
 #+end_src
 
-We also create a shell script for screen lock, shutdown etc, borrowed from
-https://faq.i3wm.org/question/239/how-do-i-suspendlockscreen-and-logout.1.html
+  We also create a shell script for screen lock, shutdown etc, borrowed from
+  https://faq.i3wm.org/question/239/how-do-i-suspendlockscreen-and-logout.1.html
 
-#+begin_src sh :tangle i3/.local/bin/i3exit :mkdirp yes :shebang "#!/bin/sh"
-  lock() {
-      i3lock
-  }
+  ,#+begin_src sh :tangle i3/.local/bin/i3exit :mkdirp yes :shebang "#!/bin/sh"
+    lock() {
+        i3lock
+    }
 
-  case "$1" in
-      lock)
-          lock
-          ;;
-      logout)
-          i3-msg exit
-          ;;
-      suspend)
-          systemctl suspend
-          ;;
-      hibernate)
-          systemctl hibernate
-          ;;
-      reboot)
-          systemctl reboot
-          ;;
-      shutdown)
-          systemctl poweroff
-          ;;
-      ,*)
-          echo "Usage: $0 {lock|logout|suspend|hibernate|reboot|shutdown}"
-          exit 2
-  esac
+    case "$1" in
+        lock)
+            lock
+            ;;
+        logout)
+            i3-msg exit
+            ;;
+        suspend)
+            systemctl suspend
+            ;;
+        hibernate)
+            systemctl hibernate
+            ;;
+        reboot)
+            systemctl reboot
+            ;;
+        shutdown)
+            systemctl poweroff
+            ;;
+        ,*)
+            echo "Usage: $0 {lock|logout|suspend|hibernate|reboot|shutdown}"
+            exit 2
+    esac
 
-  exit 0
+    exit 0
 #+end_src
 
 But instead of using an i3 mode, try using dmenu
