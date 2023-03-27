@@ -228,8 +228,8 @@ dmenu_path | dmenu -c -l 6 -g 3 "$@" | ${SHELL:-"/bin/sh"} &
 Launch dmenu or i3-dmenu-desktop with shortcuts
 
 #+NAME: get_dmenu_args
-#+BEGIN_SRC emacs-lisp
-  (if dmenu-patched "-c -l 6 -g 3" "")
+#+BEGIN_SRC emacs-lisp :tangle no
+  (if dmenu-patched-p "-c -l 6 -g 3" "")
 #+END_SRC
 
 #+begin_src conf :noweb yes
@@ -265,7 +265,7 @@ This is system-dependent, use xrandr commands to rotate and position monitors
 ** Screen lock, suspend etc.
 
 #+NAME: get_wallpaper_args
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (if (equal system "scpc041") "-i /usr/share/backgrounds/f34/default/f34-02-night.png" "")
 #+END_SRC
 
