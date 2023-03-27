@@ -245,7 +245,7 @@ Use picom (may not be available on all systems)
 
 #+begin_src conf :tangle (if (equal system "Arctopus") "i3/.config/i3/config" "no")
 # Enable compositing (i.e. for transparent terminals)
-exec --no-startup-id picom
+exec --no-startup-id picom --backend glx
 
 #+end_src
 ** Monitors
