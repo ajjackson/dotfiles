@@ -683,6 +683,19 @@ whereas on Linux we use xclip.
   bind-key -T copy-mode 'M-w' send-keys -X copy-pipe-and-cancel "xclip -sel clip -i"
   bind-key -T copy-mode Enter send-keys -X copy-pipe-and-cancel "xclip -sel clip -i"
 #+END_SRC
+
+* Git
+
+#+BEGIN_SRC conf :tangle git/.gitconfig :mkdirp yes
+  [user]
+          name = Adam J. Jackson
+          email = a.j.jackson@physics.org
+  [alias]
+          lol = log --graph --decorate --pretty=oneline --abbrev-commit --all --color
+  [init]
+          defaultBranch = main
+#+END_SRC
+
    
 * End matter
 
