@@ -1,3 +1,5 @@
+#+STARTUP: indent
+
 * Setup
 
 This block of elisp loads an elisp file to set variables that can be
@@ -23,197 +25,167 @@ probabably needs to authorise this with 'y'.
 #+end_src
 
 #+RESULTS: guess-system
+: t
 
-* Dummy files
-
-#+begin_src conf :mkdirp yes :tangle "test/demo"
-This is great
-#+end_src
-
-#+begin_src conf :tangle (if (member system '("Arctopus" "DreamMachine")) "test/demo" "no")
-for music
-#+end_src
-
-#+begin_src conf :mkdirp yes :tangle (if (not (member system '("Arctopus" "DreamMachine"))) "test/demo" "no")
-for sports
-#+end_src
 
 * i3
   :PROPERTIES:
   :header-args: :tangle "i3/.config/i3/config"
   :END:
 
+i3 configuration mostly lives in one file.
 #+begin_src conf :mkdirp yes
-# Super key
-set $mod Mod4
+  # Super key
+  set $mod Mod4
 
-font pango:Inconsolata 8
+  font pango:Inconsolata 8
 
-# Start XDG autostart .desktop files using dex. See also
-# https://wiki.archlinux.org/index.php/XDG_Autostart
-exec --no-startup-id dex-autostart --autostart --environment i3
+  # Start XDG autostart .desktop files using dex. See also
+  # https://wiki.archlinux.org/index.php/XDG_Autostart
+  exec --no-startup-id dex-autostart --autostart --environment i3
 
-# Hide titlebars unless tabbing/stacking
-for_window [class="^.*"] border none
+  # Hide titlebars unless tabbing/stacking
+  for_window [class="^.*"] border none
 
-# NetworkManager is the most popular way to manage wireless networks on Linux,
-# and nm-applet is a desktop environment-independent system tray GUI for it.
-exec --no-startup-id nm-applet
+  # NetworkManager is the most popular way to manage wireless networks on Linux,
+  # and nm-applet is a desktop environment-independent system tray GUI for it.
+  exec --no-startup-id nm-applet
 
-# Use pactl to adjust volume in PulseAudio.
-set $refresh_i3status killall -SIGUSR1 i3status
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
-bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
-bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+  # Use Mouse+$mod to drag floating windows to their wanted position
+  floating_modifier $mod
 
-# Use Mouse+$mod to drag floating windows to their wanted position
-floating_modifier $mod
+  # move tiling windows via drag & drop by left-clicking into the title bar,
+  # or left-clicking anywhere into the window while holding the floating modifier.
+  tiling_drag modifier titlebar
 
-# move tiling windows via drag & drop by left-clicking into the title bar,
-# or left-clicking anywhere into the window while holding the floating modifier.
-tiling_drag modifier titlebar
+  # start a terminal
+  bindsym $mod+Return exec alacritty msg create-window || alacritty
 
-# start a terminal
-bindsym $mod+Return exec alacritty msg create-window || alacritty
+  # kill focused window
+  bindsym $mod+Shift+q kill
 
-# kill focused window
-bindsym $mod+Shift+q kill
+  # change focus
+  bindsym $mod+j focus left
+  bindsym $mod+k focus down
+  bindsym $mod+l focus up
+  bindsym $mod+semicolon focus right
 
-# change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus right
+  # move focused window
+  bindsym $mod+Shift+j move left
+  bindsym $mod+Shift+k move down
+  bindsym $mod+Shift+l move up
+  bindsym $mod+Shift+semicolon move right
 
-# alternatively, you can use the cursor keys:
-bindsym $mod+Left focus left
-bindsym $mod+Down focus down
-bindsym $mod+Up focus up
-bindsym $mod+Right focus right
+  # split in horizontal orientation
+  bindsym $mod+h split h
 
-# move focused window
-bindsym $mod+Shift+j move left
-bindsym $mod+Shift+k move down
-bindsym $mod+Shift+l move up
-bindsym $mod+Shift+semicolon move right
+  # split in vertical orientation
+  bindsym $mod+v split v
 
-# alternatively, you can use the cursor keys:
-bindsym $mod+Shift+Left move left
-bindsym $mod+Shift+Down move down
-bindsym $mod+Shift+Up move up
-bindsym $mod+Shift+Right move right
+  # enter fullscreen mode for the focused container
+  bindsym $mod+f fullscreen toggle
 
-# split in horizontal orientation
-bindsym $mod+h split h
+  # change container layout (stacked, tabbed, toggle split)
+  bindsym $mod+s layout stacking
+  bindsym $mod+w layout tabbed
+  bindsym $mod+e layout toggle split
 
-# split in vertical orientation
-bindsym $mod+v split v
+  # toggle tiling / floating
+  bindsym $mod+Shift+space floating toggle
 
-# enter fullscreen mode for the focused container
-bindsym $mod+f fullscreen toggle
+  # change focus between tiling / floating windows
+  bindsym $mod+space focus mode_toggle
 
-# change container layout (stacked, tabbed, toggle split)
-bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
-bindsym $mod+e layout toggle split
+  # focus the parent container
+  bindsym $mod+a focus parent
 
-# toggle tiling / floating
-bindsym $mod+Shift+space floating toggle
+  # focus the child container
+  bindsym $mod+z focus child
 
-# change focus between tiling / floating windows
-bindsym $mod+space focus mode_toggle
+  # Define names for default workspaces for which we configure key bindings later on.
+  # We use variables to avoid repeating the names in multiple places.
+  set $ws1 "1"
+  set $ws2 "2"
+  set $ws3 "3"
+  set $ws4 "4"
+  set $ws5 "5"
+  set $ws6 "6"
+  set $ws7 "7"
+  set $ws8 "8"
+  set $ws9 "9"
+  set $ws10 "10"
 
-# focus the parent container
-bindsym $mod+a focus parent
+  # switch to workspace
+  bindsym $mod+1 workspace number $ws1
+  bindsym $mod+2 workspace number $ws2
+  bindsym $mod+3 workspace number $ws3
+  bindsym $mod+4 workspace number $ws4
+  bindsym $mod+5 workspace number $ws5
+  bindsym $mod+6 workspace number $ws6
+  bindsym $mod+7 workspace number $ws7
+  bindsym $mod+8 workspace number $ws8
+  bindsym $mod+9 workspace number $ws9
+  bindsym $mod+0 workspace number $ws10
 
-# focus the child container
-#bindsym $mod+d focus child
+  # move focused container to workspace
+  bindsym $mod+Shift+1 move container to workspace number $ws1
+  bindsym $mod+Shift+2 move container to workspace number $ws2
+  bindsym $mod+Shift+3 move container to workspace number $ws3
+  bindsym $mod+Shift+4 move container to workspace number $ws4
+  bindsym $mod+Shift+5 move container to workspace number $ws5
+  bindsym $mod+Shift+6 move container to workspace number $ws6
+  bindsym $mod+Shift+7 move container to workspace number $ws7
+  bindsym $mod+Shift+8 move container to workspace number $ws8
+  bindsym $mod+Shift+9 move container to workspace number $ws9
+  bindsym $mod+Shift+0 move container to workspace number $ws10
 
-# Define names for default workspaces for which we configure key bindings later on.
-# We use variables to avoid repeating the names in multiple places.
-set $ws1 "1"
-set $ws2 "2"
-set $ws3 "3"
-set $ws4 "4"
-set $ws5 "5"
-set $ws6 "6"
-set $ws7 "7"
-set $ws8 "8"
-set $ws9 "9"
-set $ws10 "10"
+  # cycle workspaces
+  bindsym $mod+Tab workspace next
+  bindsym $mod+Shift+Tab workspace prev
 
-# switch to workspace
-bindsym $mod+1 workspace number $ws1
-bindsym $mod+2 workspace number $ws2
-bindsym $mod+3 workspace number $ws3
-bindsym $mod+4 workspace number $ws4
-bindsym $mod+5 workspace number $ws5
-bindsym $mod+6 workspace number $ws6
-bindsym $mod+7 workspace number $ws7
-bindsym $mod+8 workspace number $ws8
-bindsym $mod+9 workspace number $ws9
-bindsym $mod+0 workspace number $ws10
+  # reload the configuration file
+  bindsym $mod+Shift+c reload
+  # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+  bindsym $mod+Shift+r restart
+  # exit i3 (logs you out of your X session)
+  bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 
-# move focused container to workspace
-bindsym $mod+Shift+1 move container to workspace number $ws1
-bindsym $mod+Shift+2 move container to workspace number $ws2
-bindsym $mod+Shift+3 move container to workspace number $ws3
-bindsym $mod+Shift+4 move container to workspace number $ws4
-bindsym $mod+Shift+5 move container to workspace number $ws5
-bindsym $mod+Shift+6 move container to workspace number $ws6
-bindsym $mod+Shift+7 move container to workspace number $ws7
-bindsym $mod+Shift+8 move container to workspace number $ws8
-bindsym $mod+Shift+9 move container to workspace number $ws9
-bindsym $mod+Shift+0 move container to workspace number $ws10
+  # resize window (you can also use the mouse for that)
+  mode "resize" {
+          # These bindings trigger as soon as you enter the resize mode
 
-# cycle workspaces
-bindsym $mod+Tab workspace next
-bindsym $mod+Shift+Tab workspace prev
+          # Pressing left will shrink the window’s width.
+          # Pressing right will grow the window’s width.
+          # Pressing up will shrink the window’s height.
+          # Pressing down will grow the window’s height.
+          bindsym j resize shrink width 10 px or 10 ppt
+          bindsym k resize grow height 10 px or 10 ppt
+          bindsym l resize shrink height 10 px or 10 ppt
+          bindsym semicolon resize grow width 10 px or 10 ppt
 
-# reload the configuration file
-bindsym $mod+Shift+c reload
-# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
-bindsym $mod+Shift+r restart
-# exit i3 (logs you out of your X session)
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
+          # same bindings, but for the arrow keys
+          bindsym Left resize shrink width 10 px or 10 ppt
+          bindsym Down resize grow height 10 px or 10 ppt
+          bindsym Up resize shrink height 10 px or 10 ppt
+          bindsym Right resize grow width 10 px or 10 ppt
 
-# resize window (you can also use the mouse for that)
-mode "resize" {
-        # These bindings trigger as soon as you enter the resize mode
+          # back to normal: Enter or Escape or $mod+r
+          bindsym Return mode "default"
+          bindsym Escape mode "default"
+          bindsym $mod+r mode "default"
+  }
 
-        # Pressing left will shrink the window’s width.
-        # Pressing right will grow the window’s width.
-        # Pressing up will shrink the window’s height.
-        # Pressing down will grow the window’s height.
-        bindsym j resize shrink width 10 px or 10 ppt
-        bindsym k resize grow height 10 px or 10 ppt
-        bindsym l resize shrink height 10 px or 10 ppt
-        bindsym semicolon resize grow width 10 px or 10 ppt
+  bindsym $mod+r mode "resize"
 
-        # same bindings, but for the arrow keys
-        bindsym Left resize shrink width 10 px or 10 ppt
-        bindsym Down resize grow height 10 px or 10 ppt
-        bindsym Up resize shrink height 10 px or 10 ppt
-        bindsym Right resize grow width 10 px or 10 ppt
+  # Appearance tweaks
+  gaps inner 4
+  # gaps outer -4
 
-        # back to normal: Enter or Escape or $mod+r
-        bindsym Return mode "default"
-        bindsym Escape mode "default"
-        bindsym $mod+r mode "default"
-}
-
-bindsym $mod+r mode "resize"
-
-# Appearance tweaks
-gaps inner 4
-# gaps outer -4
-
-# Start i3bar to display a workspace bar (plus the system information i3status
-# finds out, if available)
-# bar {
-#         status_command i3status
-# }
+  # Start i3bar to display a workspace bar (plus the system information i3status
+  # finds out, if available)
+  # bar {
+  #         status_command i3status
+  # }
 
 #+end_src
 
@@ -232,8 +204,8 @@ Launch dmenu or i3-dmenu-desktop with shortcuts
   (if dmenu-patched-p "-c -l 6 -g 3" "")
 #+END_SRC
 
-#+begin_src conf :noweb yes
-  bindsym $mod+d exec --no-startup-id dmenu_run
+#+begin_src conf :noweb no-export
+  bindsym $mod+d exec --no-startup-id dmenu_run <<get_dmenu_args()>>
   bindsym $mod+Shift+d exec --no-startup-id i3-dmenu-desktop --dmenu='dmenu -i <<get_dmenu_args()>>'
 #+end_src
 
@@ -254,7 +226,7 @@ This is system-dependent, use xrandr commands to rotate and position monitors
 
 #+begin_src conf :mkdirp yes :tangle (if (equal system "Arctopus") "i3/.config/i3/config" "no")
   # Sort out monitor positions
-  exec xrandr --output DVI-D-0 --rotate left --right-of HDMI-0
+  exec xrandr --output DVI-D-0 --rotate left --right-of HDMI-0 --pos 1980x0
   exec xrandr --output HDMI-0 --pos 0x550
 
   # They are in the wrong order so assign initial workspaces
@@ -266,59 +238,61 @@ This is system-dependent, use xrandr commands to rotate and position monitors
 
 #+NAME: get_wallpaper_args
 #+BEGIN_SRC emacs-lisp :tangle no
-  (if (equal system "scpc041") "-i /usr/share/backgrounds/f34/default/f34-02-night.png" "")
+  (cond ((equal system "scpc041") "-i /usr/share/backgrounds/f34/default/f34-02-night.png")
+        ((equal system "Arctopus") "-i /home/adam/Pictures/Wallpapers/lock-screen-big.png")
+        ('t ""))
 #+END_SRC
 
-#+begin_src conf :noweb yes
+#+begin_src conf :noweb no-export
   # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
   # screen before suspend. Use loginctl lock-session to lock your screen.
   exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork <<get_wallpaper_args()>>
 #+end_src
 
-  We also create a shell script for screen lock, shutdown etc, borrowed from
-  https://faq.i3wm.org/question/239/how-do-i-suspendlockscreen-and-logout.1.html
+We also create a shell script for screen lock, shutdown etc, borrowed from
+https://faq.i3wm.org/question/239/how-do-i-suspendlockscreen-and-logout.1.html
 
-  ,#+begin_src sh :tangle i3/.local/bin/i3exit :mkdirp yes :shebang "#!/bin/sh"
-    lock() {
-        i3lock
-    }
+#+begin_src sh :tangle i3/.local/bin/i3exit :mkdirp yes :shebang "#!/bin/sh" :noweb no-export
+  lock() {
+      i3lock <<get_wallpaper_args()>>
+  }
 
-    case "$1" in
-        lock)
-            lock
-            ;;
-        logout)
-            i3-msg exit
-            ;;
-        suspend)
-            systemctl suspend
-            ;;
-        hibernate)
-            systemctl hibernate
-            ;;
-        reboot)
-            systemctl reboot
-            ;;
-        shutdown)
-            systemctl poweroff
-            ;;
-        ,*)
-            echo "Usage: $0 {lock|logout|suspend|hibernate|reboot|shutdown}"
-            exit 2
-    esac
+  case "$1" in
+      lock)
+          lock
+          ;;
+      logout)
+          i3-msg exit
+          ;;
+      suspend)
+          systemctl suspend
+          ;;
+      hibernate)
+          systemctl hibernate
+          ;;
+      reboot)
+          systemctl reboot
+          ;;
+      shutdown)
+          systemctl poweroff
+          ;;
+      ,*)
+          echo "Usage: $0 {lock|logout|suspend|hibernate|reboot|shutdown}"
+          exit 2
+  esac
 
-    exit 0
+  exit 0
 #+end_src
 
 But instead of using an i3 mode, try using dmenu
 
-#+begin_src conf 
-  bindsym $mod+c exec echo -e "lock\nlogout\nsuspend\nhibernate\nreboot\nshutdown" | dmenu "$@" | xargs i3exit
+#+begin_src conf :noweb no-export
+  bindsym $mod+c exec echo -e "lock\nlogout\nsuspend\nhibernate\nreboot\nshutdown" | dmenu <<get_dmenu_args()>> "$@" | xargs i3exit
 #+end_src
 
 
 ** Launch some more programs and services
-#+begin_src conf :tangle "i3/.config/i3/config"
+#+begin_src conf
 
 # Fancy status bar
 exec --no-startup-id $HOME/.config/polybar/launch.sh
@@ -328,7 +302,388 @@ exec --no-startup-id nitrogen --restore
 
 #+end_src
 
+** Polybar
 
+Include polybar configuration with i3 configuration as I use them
+together.  (To learn more about how to configure Polybar go to
+https://github.com/polybar/polybar. The [[https://github.com/polybar/polybar/wiki/][wiki]] page is quite helpful.)
+
+#+begin_src sh :tangle "i3/.config/polybar/launch.sh" :shebang "#! /usr/bin/env bash" :mkdirp yes
+    for m in $(xrandr --listactivemonitors | tail -n +2 | grep -o '[^ ]*$')
+    do
+        MONITOR=$m polybar --reload bottom &
+      done
+    else
+      polybar --reload bottom &
+    fi
+#+end_src
+
+#+NAME: get_polybar_colours
+#+BEGIN_SRC emacs-lisp :tangle no
+  (cond ((member system '("Arctopus"))
+         "[colors]
+  background = #2D3540
+  background-alt = #63738C
+  foreground = #C5C8C6
+  primary = #CFA43E
+  secondary = #8ABEB7
+  alert = #A54242
+  disabled = #707880"
+         )
+        ('t ""))
+
+#+END_SRC
+
+#+begin_src conf :tangle "i3/.config/polybar/config.ini" :noweb no-export
+  <<get_polybar_colours()>>
+
+  [bar/bottom]
+  monitor = ${env:MONITOR:HDMI-0}
+
+  bottom = true
+  ; override-redirect = true
+  override-redirect = false
+
+  width = 100%
+  height = 16pt
+  radius = 0
+
+  ; dpi = 96
+
+  background = ${colors.background}
+  foreground = ${colors.foreground}
+
+  line-size = 3pt
+
+  border-size = 0pt
+  border-color = #00000000
+
+  padding-left = 0
+  padding-right = 1
+
+  module-margin = 1
+
+  separator = |
+  separator-foreground = ${colors.disabled}
+
+  font-0 = "Inconsolata:weight=black:pixelsize=10"
+  ;font-0 = "VT323:pixelsize=14"
+
+  modules-left = i3
+  modules-right = filesystem pulseaudio memory cpu eth date
+
+  cursor-click = pointer
+  scroll-up = "#i3.prev"
+  scroll-down = "#i3.next"
+
+  enable-ipc = true
+
+  ; tray-position = right
+
+  ; wm-restack = generic
+  ; wm-restack = bspwm
+  wm-restack = i3
+
+  ; override-redirect = true
+
+
+  [module/xworkspaces]
+  type = internal/xworkspaces
+
+  label-active = %name%
+  label-active-background = ${colors.background-alt}
+  label-active-underline= ${colors.primary}
+  label-active-padding = 1
+
+  label-occupied = %name%
+  label-occupied-padding = 1
+
+  label-urgent = %name%
+  label-urgent-background = ${colors.alert}
+  label-urgent-padding = 1
+
+  label-empty = %name%
+  label-empty-foreground = ${colors.disabled}
+  label-empty-padding = 1
+
+  [module/xwindow]
+  type = internal/xwindow
+  label = %title:0:60:...%
+
+  [module/filesystem]
+  type = internal/fs
+  interval = 25
+
+  mount-0 = /
+
+  label-mounted = %{F#F0C674}%mountpoint%%{F-} %percentage_used%%
+
+  label-unmounted = %mountpoint% not mounted
+  label-unmounted-foreground = ${colors.disabled}
+
+  [module/pulseaudio]
+  type = internal/pulseaudio
+
+  format-volume-prefix = "VOL "
+  format-volume-prefix-foreground = ${colors.primary}
+  format-volume = <label-volume>
+
+  label-volume = %percentage%%
+
+  label-muted = muted
+  label-muted-foreground = ${colors.disabled}
+
+  click-right = pavucontrol
+
+  [module/i3]
+  type = internal/i3
+  pin-workspaces = true
+  show-urgent = true
+  strip-wsnumbers = true
+  index-sort = true
+  enable-click = false
+  enable-scroll = false
+
+  ; ws-icon-[0-9]+ = <label>;<icon>
+  ; NOTE: The <label> needs to match the name of the i3 workspace
+  ; Neither <label> nor <icon> can contain a semicolon (;)
+  ws-icon-0 = 1;♚
+  ws-icon-1 = 2;♛
+  ws-icon-2 = 3;♜
+  ws-icon-3 = 4;♝
+  ws-icon-4 = 5;♞
+  ws-icon-default = ♟
+  ; NOTE: You cannot skip icons, e.g. to get a ws-icon-6
+  ; you must also define a ws-icon-5.
+  ; NOTE: Icon will be available as the %icon% token inside label-*
+
+  ; Available tags:
+  ;   <label-state> (default) - gets replaced with <label-(focused|unfocused|visible|urgent)>
+  ;   <label-mode> (default)
+  format = <label-state> <label-mode>
+
+  ; Available tokens:
+  ;   %mode%
+  ; Default: %mode%
+  label-mode = %mode%
+  label-mode-padding = 2
+  label-mode-background = #e60053
+
+  ; Available tokens:
+  ;   %name%
+  ;   %icon%
+  ;   %index%
+  ;   %output%
+  ; Default: %icon% %name%
+  label-focused = %index%
+  label-focused-foreground = ${colors.primary}
+  label-focused-background = ${colors.background}
+  label-focused-underline = ${colors.primary}
+  label-focused-padding = 2
+
+  ; Available tokens:
+  ;   %name%
+  ;   %icon%
+  ;   %index%
+  ;   %output%
+  ; Default: %icon% %name%
+  label-unfocused = %index%
+  label-unfocused-padding = 2
+
+  ; Available tokens:
+  ;   %name%
+  ;   %icon%
+  ;   %index%
+  ;   %output%
+  ; Default: %icon% %name%
+  label-visible = %index%
+  label-visible-underline = ${colors.foreground}
+  label-visible-padding = 2
+
+  ; Available tokens:
+  ;   %name%
+  ;   %icon%
+  ;   %index%
+  ;   %output%
+  ; Default: %icon% %name%
+  label-urgent = %index%
+  label-urgent-foreground = #000000
+  label-urgent-background = #bd2c40
+  label-urgent-padding = 4
+
+  ; Separator in between workspaces
+  ;label-separator = |
+  ;label-separator-padding = 2
+  ;label-separator-foreground = #ffb52a
+
+  [module/xkeyboard]
+  type = internal/xkeyboard
+  blacklist-0 = num lock
+
+  label-layout = %layout%
+  label-layout-foreground = ${colors.primary}
+
+  label-indicator-padding = 2
+  label-indicator-margin = 1
+  label-indicator-foreground = ${colors.background}
+  label-indicator-background = ${colors.secondary}
+
+  [module/memory]
+  type = internal/memory
+  interval = 2
+  format-prefix = "RAM "
+  format-prefix-foreground = ${colors.primary}
+  label = %percentage_used:2%%
+
+  [module/cpu]
+  type = internal/cpu
+  interval = 2
+  format-prefix = "CPU "
+  format-prefix-foreground = ${colors.primary}
+  label = %percentage:2%%
+
+  [network-base]
+  type = internal/network
+  interval = 5
+  format-connected = <label-connected>
+  format-disconnected = <label-disconnected>
+  label-disconnected = %{F#F0C674}%ifname%%{F#707880} disconnected
+
+  [module/wlan]
+  inherit = network-base
+  interface-type = wireless
+  label-connected = %{F#F0C674}%ifname%%{F-} %essid% %local_ip%
+
+  [module/eth]
+  inherit = network-base
+  interface-type = wired
+  label-connected = %{F#F0C674}%ifname%%{F-} %local_ip%
+
+  [module/date]
+  type = internal/date
+  interval = 1
+
+  date = %H:%M
+  date-alt = %Y-%m-%d %H:%M:%S
+
+  label = %date%
+  label-foreground = ${colors.primary}
+
+  [settings]
+  screenchange-reload = true
+  pseudo-transparency = true
+
+  ; vim:ft=dosini
+
+#+end_src
+
+
+* Tmux
+   :PROPERTIES:
+   :header-args: :tangle "tmux/.config/tmux/tmux.conf" :mkdirp yes
+   :END:
+
+I'm not using tmux so much on the desktop with i3 but it still has its
+uses especially on remote servers.
+
+#+BEGIN_SRC conf
+  setw -g mode-keys emacs
+  set -g mouse on
+#+END_SRC         
+
+I use =`= as my leader key to avoid a chord and clashes with emacs
+cursor movement. Actually, since moving to very small custom
+keyboards this is less of an advantage: I use arrow keys in emacs
+and the backtick requires a chord to access! Maybe if I start using
+tmux heavily again I'll switch back to =C-b= but for now this is
+what I'm comfortable with.
+
+#+BEGIN_SRC conf
+  unbind-key C-b
+  set -g prefix '`'
+  bind-key '`' send-prefix
+#+END_SRC
+
+Add a shortcut for refreshing the config.
+#+BEGIN_SRC conf
+  bind-key r source-file ~/.tmux.conf
+#+END_SRC
+
+When accessing a tmux session that was initiated in smaller window,
+try to resize it.
+#+BEGIN_SRC conf
+  setw -g aggressive-resize on
+#+END_SRC
+
+Set up a nice simple blue colour scheme. This plays nicely with solarized,
+tango and my i3/alacrittys themes.   
+#+BEGIN_SRC conf
+  set -g status-style bg=blue,fg=white
+  set -g window-status-style bg=blue,fg=brightwhite
+  set -g pane-border-style fg=white
+  set -g pane-active-border-style fg=brightblue
+  set -g message-style bg=white,fg=blue
+#+END_SRC
+
+Make history longer so program output doesn't clobber useful stuff.
+#+BEGIN_SRC conf
+  set -g history-limit 100000
+#+END_SRC
+
+Add a few shortcuts for common new-pane needs.
+#+BEGIN_SRC conf
+  # Create a new remote shell
+  bind-key S   command-prompt -p "host" "split-window 'ssh %1'"
+  bind-key C-s command-prompt -p "host" "new-window -n %1 'ssh %1'"
+
+  # Get an editor
+  bind-key y   new-window -n "emacs"  "emacsclient -t"
+
+  # Get a file manager
+  bind-key N   new-window -n "nnn"  "nnn"
+#+END_SRC
+
+More intuitive splitting commands. I always forget which direction
+=%= is going to split...
+#+BEGIN_SRC conf
+  bind-key | split-window -h
+  bind-key - split-window -v
+#+END_SRC
+
+Count from 1 so loading windows with 1, 2, 3... keys is easy.
+#+BEGIN_SRC conf
+  set -g base-index 1
+#+END_SRC
+
+** Clipboard
+
+First we unbind some keys we're going to need
+
+#+BEGIN_SRC conf
+  unbind -T copy-mode 'C-w'
+  unbind -T copy-mode 'M-w'
+  unbind -T copy-mode Enter
+#+END_SRC
+
+Some of the clipboard configuration is different for Mac vs
+Linux. On Mac we need to install "reattach-to-user-namespace"
+
+#+BEGIN_SRC conf :tangle (if (equal system-type 'darwin) "tmux/.config/tmux/tmux.conf" "")
+    # http://iancmacdonald.com/macos/emacs/tmux/2017/01/15/macOS-tmux-emacs-copy-past.html
+    set-option -g default-command "reattach-to-user-namespace -l bash"
+    bind-key -T copy-mode 'C-w' send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
+    bind-key -T copy-mode 'M-w' send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
+    bind-key -T copy-mode Enter send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
+    bind ] run "reattach-to-user-namespace pbpaste | tmux load-buffer - && tmux paste-buffer"
+#+END_SRC
+
+whereas on Linux we use xclip.
+#+BEGIN_SRC conf :tangle (if (equal system-type 'gnu/linux) "tmux/.config/tmux/tmux.conf" "")
+  bind-key -T copy-mode 'C-w' send-keys -X copy-pipe-and-cancel "xclip -sel clip -i"
+  bind-key -T copy-mode 'M-w' send-keys -X copy-pipe-and-cancel "xclip -sel clip -i"
+  bind-key -T copy-mode Enter send-keys -X copy-pipe-and-cancel "xclip -sel clip -i"
+#+END_SRC
+   
 * End matter
 
 # Use M-x normal-mode to re-run local variables/eval and set the environment for tangle logic
