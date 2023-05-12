@@ -685,7 +685,8 @@ whereas on Linux we use xclip.
 #+END_SRC
 
 * Git
-
+Pretty barebones git config really; one pretty logging alias borrowed
+from a blog post
 #+BEGIN_SRC conf :tangle git/.gitconfig :mkdirp yes
   [user]
           name = Adam J. Jackson
@@ -696,7 +697,52 @@ whereas on Linux we use xclip.
           defaultBranch = main
 #+END_SRC
 
-   
+* SSH
+   :PROPERTIES:
+   :header-args: :tangle "ssh/.ssh/config" :mkdirp yes
+   :END:
+
+My ssh config draws significant inspiration from (outragously steals from)
+https://github.com/jarvist/jarvist-dotfiles.
+
+#+BEGIN_SRC conf :tangle-mode (identity #o600)
+Host *
+Protocol 2
+UseRoaming no
+#+END_SRC
+
+Other goodies improve performance and reduce drop-outs:
+#+BEGIN_SRC conf
+Compression yes
+
+ServerAliveCountMax 5
+# Allowed pings with no reply before hang up
+
+ServerAliveInterval 30
+# Needs to be <60s for some home routers
+#+END_SRC
+
+Actual account details are pulled from another file to be copied and
+pasted manually: *ssh-accounts.txt*.
+
+#+NAME: get_ssh_accounts
+#+BEGIN_SRC emacs-lisp :tangle no
+  (let ((filename "ssh-accounts.txt")
+        (get-text (lambda (filename)
+                    (with-temp-buffer
+                      (insert-file-contents filename)
+                      (buffer-substring-no-properties
+                       (point-min) (point-max))))))
+    (if (file-exists-p filename)
+        (funcall get-text filename)
+        (message (concat "# Could not find " filename)))
+    )
+#+END_SRC
+
+#+BEGIN_SRC conf :noweb no-export
+<<get_ssh_accounts()>>
+#+END_SRC
+
 * End matter
 
 # Use M-x normal-mode to re-run local variables/eval and set the environment for tangle logic
