@@ -295,7 +295,7 @@ But instead of using an i3 mode, try using dmenu
 #+begin_src conf
 
 # Fancy status bar
-exec --no-startup-id $HOME/dot-config/polybar/launch.sh
+exec --no-startup-id $HOME/.config/polybar/launch.sh
 
 # Wallpaper
 exec --no-startup-id nitrogen --restore
