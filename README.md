@@ -24,9 +24,10 @@ Things to try differently
 
     - Don't name the setup script setup.py, that was really confusing because of Python conventions
 
-    - Consider using `stow` to distribute files that have system-dependent locations:
+    - Use `stow` to distribute files that have system-dependent locations:
         - org-babel can tangle to a standard tree within a temporary director or this source folder
         - then call `stow -t /suitable/root/position [packages]` to copy them
+        - `--dotfiles` argument automatically converts "dot-config" to ".config" etc for a nicer tree
 
 Things that remain a bit of a headache
 ======================================
@@ -45,14 +46,15 @@ Things that remain a bit of a headache
 Instructions
 ============
 
-- If using i3, make sure local paths are visible. (i.e. add ~/.local/bin to PATH in ~/.profile)
+- For i3 I put a few scripts into ~/.local/bin; make sure those are visible. (i.e. add ~/.local/bin to PATH in ~/.profile)
 - `./make.el` to tangle dotfiles to directories
 - `stow -t $HOME --dotfiles i3 fish ...` to symlink things to ~/.config and ~/.local/bin
   - Once there are more packages and machines set up, this should be
     included in `make.el`, fired off by an optional argument.
 
-- The master branch of GNU stow is busted, we need to use a fork for
-  dotfile name conversion to work properly.
+- The [dotfiles feature is busted](https://github.com/aspiers/stow/issues/33)
+  on most builds of GNU stow, we need to use a fork for this name
+  conversion to work properly.
 
     ```
     git clone https://github.com/ajjackson/stow.git
@@ -65,12 +67,12 @@ Instructions
     ```
   builds **stow** under ~/opt/stow
     
-- To run the tests we need some other Perl modules installed
+  - To run the tests we need some other Perl modules installed
 
-    ```
-    cpan
-    > install Test::Output
-    > install Test::More
-    > install IO::Scalar
-    ```
-  Then `make test` should work.
+      ```
+      cpan
+      > install Test::Output
+      > install Test::More
+      > install IO::Scalar
+      ```
+    Then `make test` should work.
