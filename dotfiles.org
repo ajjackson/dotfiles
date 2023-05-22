@@ -657,10 +657,12 @@ colors:
    :END:
 
 #+begin_src fish
-if status is-interactive
-    # Commands to run in interactive sessions can go here
-    alias em 'emacsclient -t --alternate-editor=""'
-end
+  if status is-interactive
+      # Commands to run in interactive sessions can go here
+      set -x EDITOR "emacsclient -t"
+      set -x ALTERNATE_EDITOR ''
+      alias em $EDITOR
+  end
 #+end_src
 
 I might have installed some Chicken Scheme libraries, if so then
@@ -726,7 +728,8 @@ If environment modules are installed:
    :PROPERTIES:
    :header-args: :tangle no
    :END:
-*Quarantined blocks: not exported. Move to another section if needed.*
+
+_Quarantined blocks: not exported. Move to another section if needed._
 
 ~/.local/bin is an important place used by, among other things, =pip
 install --user=. Adding to PATH doesn't seem to be necessary for fish
@@ -786,7 +789,8 @@ Add a user directory for custom modulefiles:
    :PROPERTIES:
    :header-args: :tangle no
    :END:
-*Quarantined blocks: not exported. Move to another section if needed.*
+
+_Quarantined blocks: not exported. Move to another section if needed._
 
 Not sure what program I have ~/.cabal/bin for. I know that's for
 Haskell stuff but it doesn't seem to be on Arctopus. Maybe just add
@@ -1203,6 +1207,40 @@ pasted manually: *ssh-accounts.txt*.
 #+BEGIN_SRC conf :noweb no-export
 <<get_ssh_accounts()>>
 #+END_SRC
+
+* nnn
+
+** Plugins
+NNN plugins are programs that live in ~/.config/nnn/plugins. By
+default this directory is empty; the user copies/writes the plugins
+they wish to use and sets an ~NNN_PLUG~ environment variable that
+assigns shortcuts. We can also include simple commands directly, such
+as the git command to upload Mantid test data.
+
+#+begin_src fish :tangle fish/dot-config/fish/config.fish
+  set -x NNN_PLUG 'u:!git add-test-data "$nnn"'
+
+  if test -f "$HOME/.config/nnn/plugins/nuke"
+      set -x NNN_OPENER "$HOME/.config/nnn/plugins/nuke"
+  end
+
+#+end_src
+
+** Notes
+The default =nuke= plugin doesn't play nicely with ~EDITOR=emacsclient
+-t~; it's a ~sh~ script and ends up keeping EDITOR in quotes when
+calling it, so it looks for binary name includeing the ~ -t~ and fails.
+
+The workaround is to change the editor calls from
+#+begin_src sh :tangle no
+              "${EDITOR}" "${FPATH}"
+#+end_src
+to
+#+begin_src sh :tangle no
+              sh -c "${EDITOR} ${FPATH}"
+#+end_src
+
+For now I'm not managing that in this file.
 
 * MOC: Music On Console
 I'm not using ~mocp~ much at the moment because of Linux Audio Hell
