@@ -190,7 +190,7 @@ i3 configuration mostly lives in one file.
 #+end_src
 
 ** Dmenu
-On patched systems, use a modified dmenu_run
+On patched systems, use a modified =dmenu_run=
 #+begin_src sh :mkdirp yes :shebang "#!/bin/sh" :tangle (if dmenu-patched-p "i3/dot-local/bin/dmenu_run" "no")
 dmenu_path | dmenu -c -l 6 -g 3 "$@" | ${SHELL:-"/bin/sh"} &
 #+end_src
@@ -220,6 +220,22 @@ Use picom (may not be available on all systems)
 exec --no-startup-id picom --backend glx
 
 #+end_src
+
+Actual picom configuration lives in another file
+#+begin_src conf :tangle (if (member system '("Arctopus" "scpc041")) "i3/dot-config/picom.conf" "no")
+  corner-radius = 10;
+  rounded-corners-exclude = [
+  "window_type = 'dock'",
+  "window_type = 'desktop'"
+  ];
+
+  backend = "glx";
+
+  inactive-dim = 0.2;
+  inactive-opacity = 0.9;
+  opacity-rule=["100:class_g = 'i3lock'"];
+#+end_src
+
 ** Monitors
 
 This is system-dependent, use xrandr commands to rotate and position monitors
@@ -577,6 +593,62 @@ https://github.com/polybar/polybar. The [[https://github.com/polybar/polybar/wik
 
 #+end_src
 
+* Alacritty
+  :PROPERTIES:
+  :header-args: :tangle "alacritty/dot-config/alacritty/alacritty.yml" :mkdirp yes
+  :END:
+
+Configuration for Alacritty GPU-enhanced terminal emulator. I mostly
+use defaults for this, actually!
+
+This config format allows some parts to be imported from separate files with syntax such as
+
+#+begin_src yaml :tangle no
+  import:
+    - /path/to/alacritty.yml
+
+#+end_src
+but for now we are not using this.
+
+Transparency is fun and lets us see our desktop background while working!
+
+#+begin_src yaml
+
+window:
+  opacity: 0.9
+#+end_src
+
+Colour theme for Arctopus matching Hob wallpaper:
+#+begin_src yaml :tangle (if (equal system "Arctopus") "alacritty/dot-config/alacritty/alacritty.yml" "no")
+# Colors (Hob)
+colors:
+  primary:
+    background: '0x2d3c59'
+    #foreground: '0xddeefe'
+    #foreground: '0xeed4b9'
+    foreground: '0xecf2f0'
+
+  normal:
+    black: '0x2d3540'
+    red: '0xcc0000'
+    green: '0x757f89'
+    yellow: '0xcfa43e'
+    blue: '0x6c84a4'
+    #blue: '0x80a3c7'
+    magenta: '0x75507b'
+    cyan: '0x06989a'
+    white: '0xd3d7cf'
+
+  bright:
+    black: '0x63738c'
+    red: '0xef2929'
+    green: '0x94a7ae'
+    yellow: '0xe1c258'
+    blue: '0x8cc7fe'
+    magenta: '0xad7fa8'
+    cyan: '0x34e2e2'
+    white: '0xeeeeec'
+  #+end_src
 * Shells
 
 ** Fish
@@ -591,6 +663,26 @@ if status is-interactive
 end
 #+end_src
 
+I might have installed some Chicken Scheme libraries, if so then
+export relevant variables.
+
+#+begin_src fish
+  set MY_CHICKEN_REPOSITORY $HOME/opt/eggs/lib/chicken/5
+  if test -d $MY_CHICKEN_REPOSITORY
+    set -x CHICKEN_INSTALL_REPOSITORY $MY_CHICKEN_REPOSITORY
+    set -x CHICKEN_REPOSITORY_PATH $MY_CHICKEN_REPOSITORY
+  end
+#+end_src
+
+*** Paths
+On Arctopus we need to add /usr/bin to the PATH because otherwise it
+won't be there. I had this configured as a "universal variable" in
+=~/.config/fish/fish_variables= but that led to some confusing
+incorrect ordering.
+
+#+begin_src fish :tangle (if (equal system "Arctopus") "fish/dot-config/fish/config.fish" "no")
+set -xp PATH /usr/bin
+#+end_src
 
 *** Arctopus: conda setup
 Conda block is machine-specific, used to set default conda environment:
@@ -603,11 +695,349 @@ end
 # <<< conda initialize <<<
 #+end_src
 
+
 *** Functions
 For convenience, the "n" function for use with /nnn/ file manager is
 included in this repository. I didn't write it so not much point
 having it in the literate file here. It is copied to .
 config/fish/functions
+
+*** Environment modules
+If environment modules are installed:
+- initialise
+- add user module path
+- load any default modules from ~/.modules.
+  - ~/.modules is a non-standard config file that is not managed
+    here. It should just contain a space-separated series of modules
+    to load.
+
+#+begin_src fish
+  if test -f /usr/share/Modules/init/fish
+    source /usr/share/Modules/init/fish
+    set -xp MODULEPATH $HOME/.local/modulefiles
+
+    if test -f $HOME/.modules
+      module load (cat $HOME/.modules | string split -n " ")
+    end
+  end
+#+end_src
+
+*** Quarantine
+   :PROPERTIES:
+   :header-args: :tangle no
+   :END:
+*Quarantined blocks: not exported. Move to another section if needed.*
+
+~/.local/bin is an important place used by, among other things, =pip
+install --user=. Adding to PATH doesn't seem to be necessary for fish
+on Arctopus, but I suspect it's a complicated machine-specific thing
+that might change as I start cleaning things up.
+
+#+begin_src fish
+set -xp PATH $HOME/.local/bin
+#+end_src
+
+
+** Bash
+I still get a bit confused about bashrc vs bash_profile...
+
+Yes, bash_profile is for login sessions and bashrc is for
+non-login shells running scripts etc.  It's generally
+recommended that PATH stuff happens in bash_profile and
+aliases/functions happen in bashrc. But why? I don't generally use
+aliases in scripts, and my scripts might need access to manipulated
+paths.
+
+(Presumably this is why it is important to EXPORT any path
+manipulation; this allows it to get into any non-login subshells you
+launch.)
+
+*** Profile
+   :PROPERTIES:
+   :header-args: :tangle bash/dot-bash_profile :mkdirp yes
+   :END:
+
+Source system-wide profile if available. (Is this actually necessary? Maybe not.)
+#+begin_src bash
+  if [ -f /etc/bashrc ]; then
+    source /etc/bashrc
+  fi
+#+end_src
+
+**** Environment modules
+Whether using lmod or the old tcl environment-modules, the standard
+location for init files is the same.
+
+#+begin_src bash
+  for MODULEINIT in /usr/share/Modules/init/bash
+  do
+    if [ -f ${MODULEINIT} ]; then
+      source ${MODULEINIT}
+    fi
+  done
+#+end_src
+
+Add a user directory for custom modulefiles:
+#+begin_src bash
+  export MODULEPATH=${HOME}/.local/modulefiles:${MODULEPATH}
+#+end_src
+
+**** Quarantine
+   :PROPERTIES:
+   :header-args: :tangle no
+   :END:
+*Quarantined blocks: not exported. Move to another section if needed.*
+
+Not sure what program I have ~/.cabal/bin for. I know that's for
+Haskell stuff but it doesn't seem to be on Arctopus. Maybe just add
+for whatever machines use this?
+
+#+begin_src bash
+export PATH=$HOME/.cabal/bin:$PATH
+#+end_src
+
+Intel MKL things: I don't think I really use these any more but it was
+a nuisance to figure out the first time.
+#+BEGIN_SRC bash
+  for INTEL_INIT in /opt/intel/mkl/bin/mklvars.sh /opt/intel/bin/ifortvars.sh
+  do
+    if [ -f ${INTEL_INIT} ]; then
+      source ${INTEL_INIT} intel64
+    fi
+  done
+#+END_SRC
+
+
+**** Paths
+Most machines need ~/.local/bin adding, set it here and keep an eye
+out for where it might be redundant.
+#+begin_src bash
+export PATH=$HOME/.local/bin:$PATH
+#+end_src
+
+I might have installed some Chicken Scheme libraries, if so then
+export relevant variables.
+
+#+begin_src fish
+  MY_CHICKEN_REPOSITORY=$HOME/opt/eggs/lib/chicken/5
+  if test -d $MY_CHICKEN_REPOSITORY
+    export CHICKEN_INSTALL_REPOSITORY=$MY_CHICKEN_REPOSITORY
+    export CHICKEN_REPOSITORY_PATH=$MY_CHICKEN_REPOSITORY
+  fi
+#+end_src
+
+**** Editor
+    The choice of editor is fairly clear at this point.
+
+    ~ALTERNATE_EDITOR=""~ means emacsclient will start a new daemon if
+    none is available. This makes opening a new editor instantaneous
+    after the first one.
+    #+BEGIN_SRC bash
+    export EDITOR="emacsclient -t"
+    export ALTERNATE_EDITOR=""
+    #+END_SRC
+
+
+**** Finally
+Source bashrc for the stuff that should be run for every bash shell
+
+#+begin_src bash
+  source $HOME/.bashrc
+#+end_src
+
+*** RC
+   :PROPERTIES:
+   :header-args: :tangle   bash/dot-bashrc
+   :END:
+
+Source system-wide bashrc if available
+#+begin_src bash
+  if [ -f /etc/bashrc ]; then
+    source /etc/bashrc
+  fi
+#+end_src
+
+If there are some custom environment modules that should be loaded in
+each shell session, they go in =~/.modules=. Not clear if this is
+needed any more.
+
+#+begin_src bash
+  if [ -f $HOME/.modules ]; then
+      module load $(cat $HOME/.modules)
+  fi
+#+end_src
+
+**** Appearance
+Check the window size after each command, updating LINES and COLUMNS
+as necessary. This is only worth doing for interactive sessions so we
+look for "i" in the ~$-~ variable. ([[https://unix.stackexchange.com/questions/26676/how-to-check-if-a-shell-is-login-interactive-batch][This is somewhat Bash specific.]])
+
+#+begin_src bash
+  if [[ $- == *i* ]]; then
+      shopt -s checkwinsize
+  fi
+#+end_src
+
+Colour handling is a bit system/OS-specific.
+
+On MacOS we pass ~-G~ to ls; this does something totally different on
+other versions of Bash...
+#+begin_src bash :tangle (if (equal system-type 'darwin) "bash/dot-bashrc" "no")
+alias ls='ls -G'
+#+end_src
+
+On most Linux-y systems we instead use
+#+begin_src bash :tangle (if (equal system-type 'gnu/linux) "bash/dot-bashrc" "no")
+alias ls='ls --color=auto'
+#+end_src
+Some HPC admins gripe about this taxing the file system, so we might
+need to add an exception if I start using ARCHER again.
+
+The colours are set in the ~LS_COLORS~ variable; the ~dircolors~
+program can generate the appropriate content from a user config file,
+conventionally =~/.dircolors=. I have never felt the need to tweak
+this; I suppose it could be cute to one day add meaningful colours to DFT code
+input files etc? For now lets not bother with that stuff.
+
+**** Aliases
+
+***** Grep
+
+#+BEGIN_SRC bash
+  alias grep='grep --color=auto'
+  alias fgrep='fgrep --color=auto'
+  alias egrep='egrep --color=auto'
+#+END_SRC
+
+***** Shortcuts
+#+BEGIN_SRC bash
+  alias em=${EDITOR}
+  alias ll='ls -l'
+  alias la='ls -a'
+#+END_SRC
+
+***** Typos
+#+BEGIN_SRC bash
+  alias celar='clear'
+  alias ks='ls'
+#+END_SRC
+
+***** Radio
+
+Internet radio streaming with mplayer. Not useful for remote machines
+so only included for named ones.
+
+#+BEGIN_SRC bash :tangle (if (member system '("Arctopus" "scpc041")) "bash/dot-bashrc" "no")
+  alias soma-dronezone='mplayer -playlist http://somafm.com/dronezone130.pls < /dev/null >&0 2>&0 &'
+  alias soma-groovesalad='mplayer -playlist http://somafm.com/groovesalad130.pls < /dev/null >&0 2>&0 &'
+  alias soma-defcon='mplayer -playlist http://somafm.com/defcon130.pls < /dev/null >&0 2>&0 &'
+  alias soma-space='mplayer -playlist http://somafm.com/spacestation130.pls < /dev/null >&0 2>&0 &'
+#+END_SRC
+
+****** TODO copy to fish config, maybe get rid of redundancy somehow
+
+**** Functions
+Set window title
+#+BEGIN_SRC bash
+  set_title() { printf "\e]2;$*\a"; }
+#+END_SRC
+
+PDF manpages: first we need to find an appropriate PDF viewer
+#+NAME: get_pdf_viewer
+#+BEGIN_SRC emacs-lisp :tangle no
+(if (equal system-type 'darwin) "open" "xdg-open")
+#+END_SRC
+
+#+BEGIN_SRC bash :noweb no-export
+  PDF_VIEWER=<<get_pdf_viewer()>>
+
+  function pdfman() { man -t $1 | ps2pdf - /tmp/$1.pdf && ${PDF_VIEWER} /tmp/$1.pdf; }
+#+END_SRC
+
+
+nnn quitcd magic: [[https://github.com/jarun/nnn/blob/master/misc/quitcd/quitcd.bash_sh_zsh][Original source]] has useful comments. BSD 2-clause
+license, see header of the [[./fish/dot-config/fish/functions/n.fish][fish]] version.
+
+#+begin_src bash
+  n ()
+{
+    # Block nesting of nnn in subshells
+    if [[ "${NNNLVL:-0}" -ge 1 ]]; then
+        echo "nnn is already running"
+        return
+    fi
+
+    export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
+    \nnn "$@"
+
+    if [ -f "$NNN_TMPFILE" ]; then
+            . "$NNN_TMPFILE"
+            rm -f "$NNN_TMPFILE" > /dev/null
+    fi
+}
+#+end_src
+
+**** Prompt
+Some machines have nicknames and signature colours; I haven't been
+using this mechanism so much lately but it's neat so I'll keep the
+ARCHER example.
+
+#+BEGIN_SRC bash
+
+  case $(hostname) in
+      eslogin0*)
+          NICKNAME="ARCHER/${USER}"
+          NICKCOLOUR="0;32m";;
+      *)
+          NICKNAME=$(hostname -s)
+          NICKCOLOUR="0m";;
+  esac
+#+END_SRC
+
+Get git branch (Thanks to [[http://www.railstips.org/blog/archives/2009/02/02/bedazzle-your-bash-prompt-with-git-info][this blog]]) and construct prompt.
+#+BEGIN_SRC bash
+  function parse_git_branch {
+        ref=$(git symbolic-ref HEAD 2> /dev/null) || return
+        echo " ("${ref#refs/heads/}")"
+    }
+
+  RED="0;31m"
+
+  # (Simple prompt for dumb terminals: help emacs tramp mode)
+  case "$TERM" in
+  "dumb")
+      PS1="> "
+      ;;
+  xterm*|rxvt*|eterm*|screen*|tmux*|alacritty)
+      PS1="\[\033[${NICKCOLOUR}\]${NICKNAME}\[\033[0m\]:\w\[\033[${RED}\]\$(parse_git_branch)\[\033[0m\]$ "
+      ;;
+  *)
+      PS1="> "
+      ;;
+  esac
+
+#+END_SRC
+
+**** Password checks
+Disable graphical password checks, as these are problematic when using
+a remote terminal.
+
+#+BEGIN_SRC bash
+  unset SSH_ASKPASS
+#+END_SRC
+
+
+**** Completion
+Bash completion doesn't load automatically on a Mac if installed with Homebrew.
+
+#+BEGIN_SRC bash :tangle (if (equal system-type 'darwin) "bash/dot-bash_profile" "no")
+  for COMPLETION in /usr/local/etc/bash_completion ${HOME}/.local/completions/*
+  do
+      if [ -f ${COMPLETION} ]; then
+          source ${COMPLETION}
+      fi
+  done
+#+END_SRC
 
 * Tmux
    :PROPERTIES:
@@ -620,7 +1050,7 @@ uses especially on remote servers.
 #+BEGIN_SRC conf
   setw -g mode-keys emacs
   set -g mouse on
-#+END_SRC         
+#+END_SRC
 
 I use =`= as my leader key to avoid a chord and clashes with emacs
 cursor movement. Actually, since moving to very small custom
@@ -647,7 +1077,7 @@ try to resize it.
 #+END_SRC
 
 Set up a nice simple blue colour scheme. This plays nicely with solarized,
-tango and my i3/alacrittys themes.   
+tango and my i3/alacrittys themes.
 #+BEGIN_SRC conf
   set -g status-style bg=blue,fg=white
   set -g window-status-style bg=blue,fg=brightwhite
@@ -784,7 +1214,7 @@ but may as well keep my config around.
    :END:
 
 The colour theme and keymap are stored in other files
-#+begin_src conf 
+#+begin_src conf
   Theme = my_theme
   Keymap = my_keymap
 #+end_src
@@ -985,7 +1415,60 @@ MOCP keymap; mostly defaults but some emacs-y tweaks
 
 
 
+* Chicken
+Chicken repository stuff was set up under Fish and Bash
+sections. Maybe that should live here somehow? Or we should do noweb
+things?
+
+Configuration file for chicken that enables realine support so
+interpreter is not horribly painful to use:
+
+(This is [[https://github.com/wasamasa/breadline/blob/master/examples/.csirc][directly from]] the GPL-licensed project archive. Hopefully
+they are cool with that.)
+
+#+begin_src scheme :tangle chicken/dot-config/chicken/csirc :mkdirp yes
+  (import (chicken load))
+  (load-verbose #f)
+  (let ()
+    (import (chicken format))
+    (import (chicken process-context))
+    (import (chicken process signal))
+    (unless (get-environment-variable "INSIDE_EMACS")
+      (import breadline)
+      (import breadline-scheme-completion)
+      (history-file (format "~a/.csi_history" (get-environment-variable "HOME")))
+      (stifle-history! 10000)
+      (completer-word-break-characters-set! "\"\'`;|(")
+      (completer-set! scheme-completer)
+      (basic-quote-characters-set! "\"|")
+      (variable-bind! "blink-matching-paren" "on")
+      (paren-blink-timeout-set! 200000)
+      (let ((handler (signal-handler signal/int)))
+        (set-signal-handler! signal/int
+                             (lambda (s)
+                               (cleanup-after-signal!)
+                               (reset-after-signal!)
+                               (handler s))))
+      (on-exit reset-terminal!)
+      (current-input-port (make-readline-port))))
+#+end_src
 * End matter
+
+Experimenting with better export:
+
+Add the codeblock name if available and some ugly symbols if not
+#+begin_src elisp
+(setq org-babel-exp-code-template
+         (concat "\n=%name=:\n"
+              org-babel-exp-code-template)
+               )
+#+end_src
+
+Enable syntax highlighting
+#+begin_src elisp
+  (require 'htmlize)
+  (setq org-src-fontify-natively t)
+#+end_src
 
 # Use M-x normal-mode to re-run local variables/eval and set the environment for tangle logic
 
