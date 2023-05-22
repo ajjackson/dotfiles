@@ -921,6 +921,9 @@ input files etc? For now lets not bother with that stuff.
 #+END_SRC
 
 ***** Typos
+For old times' sake! I've been making these typos less frequently
+since moving to 40%-size keyboards.
+
 #+BEGIN_SRC bash
   alias celar='clear'
   alias ks='ls'
@@ -957,7 +960,6 @@ PDF manpages: first we need to find an appropriate PDF viewer
 
   function pdfman() { man -t $1 | ps2pdf - /tmp/$1.pdf && ${PDF_VIEWER} /tmp/$1.pdf; }
 #+END_SRC
-
 
 nnn quitcd magic: [[https://github.com/jarun/nnn/blob/master/misc/quitcd/quitcd.bash_sh_zsh][Original source]] has useful comments. BSD 2-clause
 license, see header of the [[./fish/dot-config/fish/functions/n.fish][fish]] version.
@@ -1222,6 +1224,7 @@ as the git command to upload Mantid test data.
 
   if test -f "$HOME/.config/nnn/plugins/nuke"
       set -x NNN_OPENER "$HOME/.config/nnn/plugins/nuke"
+      set -x NNN_OPTS "c"
   end
 
 #+end_src
