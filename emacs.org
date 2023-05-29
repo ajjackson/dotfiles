@@ -1,0 +1,811 @@
+#+TITLE: Emacs configuration
+#+STARTUP: indent
+
+Literate Emacs configuration. This file is intended to be tangled with
+the ~make.el~ script in this repository, and installed with GNU stow.
+
+This file requires the variable "system" to be set by calling the
+relevant block in [[file:dotfiles.org][dotfiles.org]].
+
+** Packaging setup
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
+Package.el is really slow and MELPA only tracks the latest git
+version; if it has unreasonable dependencies the package becomes
+uninstallable.
+
+Let's try switching to elpaca; it's really fast and in principle
+allows us to install from arbitrary Git commits. (But it didn't work
+when I tried it with =paperless=, the aforementioned
+bad-dependencies-MELPA package...)
+
+This is the boilerplate to install elpaca if unavailable and configure it:
+
+#+begin_src elisp
+(defvar elpaca-installer-version 0.4)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil
+                              :files (:defaults (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                 ((zerop (call-process "git" nil buffer t "clone"
+                                       (plist-get order :repo) repo)))
+                 ((zerop (call-process "git" nil buffer t "checkout"
+                                       (or (plist-get order :ref) "--"))))
+                 (emacs (concat invocation-directory invocation-name))
+                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                 ((require 'elpaca))
+                 ((elpaca-generate-autoloads "elpaca" repo)))
+            (kill-buffer buffer)
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
+#+end_src
+
+#+RESULTS:
+  
+Disable ~package.el~:
+#+begin_src elisp
+  (setq package-enable-at-startup nil)
+#+end_src
+
+Install use-package support and block the queue to ensure it is available in subsequent setup.
+
+#+begin_src elisp
+(elpaca elpaca-use-package
+  (elpaca-use-package-mode)
+  (setq elpaca-use-package-by-default t))
+
+(elpaca-wait)
+#+end_src
+
+** Paths, environment
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
+Set up another directory =~/.emacs.d/lisp= which can be used for
+packages that aren't managed with elpaca. (i.e. experiments or simple personal packages.)
+
+#+begin_src elisp
+  (add-to-list 'load-path "~/.emacs.d/lisp")
+#+end_src
+
+** Appearance
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
+*** Native tweaks
+
+Hide toolbar, scrollbars
+#+begin_src elisp
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+#+end_src
+
+Don't blink the cursor
+#+begin_src elisp
+  (blink-cursor-mode -1)
+#+end_src
+
+Silent bell
+#+begin_src elisp
+  (if (string-equal system-type "darwin")
+      (defun ring-bell-function ()
+        "Visible bell is buggy on OSX El Capitan, so display 'Nope!' instead."
+      (message "Nope!"))
+    (setq visible-bell t))
+#+end_src
+
+Scroll sensibly with mouse
+#+begin_src elisp
+  (setq mouse-wheel-follow-mouse 't)
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
+#+end_src
+
+Pretty fringe indicators for visual line mode
+#+begin_src elisp
+  (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+#+end_src
+
+The next two settings are particularly relevant for Python programming,
+but are usually what I want: never use tab characters and wrap text at
+79 characters. It's easy to tweak the fill-column with =C-x f= (not to
+be confused with find-file, C-x C-f!)
+
+#+BEGIN_SRC elisp
+  ;; Prevent Extraneous Tabs
+  (setq-default indent-tabs-mode nil)
+
+  ;; PEP 8 standard fill width
+  (setq fill-column 79)
+#+END_SRC
+
+*** Fonts
+
+Fonts are specified on a per-machine basis to account for
+different monitors, installations etc.
+
+Nice bit of lisp here: =let*= allows the variables assigned in the
+"let" statement to refer to previous variables. First we bind an
+alist of preferred fonts, then use =assoc= to locate the relevant
+entry and bind it to a new variable, then we use this to set up
+our Emacs hooks. When we leave the =let*= the new variables are
+gone so we avoid cluttering the namespace.
+
+#+BEGIN_SRC elisp
+  (let* ((system-preferred-fonts
+          '(("Angel.local" . "Menlo-18")
+            ("Angel.lan" . "Menlo-18")
+            ("Angel" . "Menlo-18")
+            ("ajj-mbp-1" . "InputMono-16")
+            ("ajj-mbp-1.local" . "InputMono-16")
+            ("dock-ajj-mbp-1" . "InputMono-16")
+            ("dock-ajj-mbp-1.esc.rl.ac.uk" . "InputMono-16")
+            ("Arctopus" . "Inconsolata-12")
+            ))
+         (preferred-font
+          (cdr (assoc system-name system-preferred-fonts))))
+    (if preferred-font
+        (progn
+          (add-to-list 'default-frame-alist (cons 'font preferred-font))
+          (set-frame-font preferred-font nil t))))
+#+END_SRC
+
+*** Themes
+Use similar logic as for font sizes to set different theme
+defaults for different machines. Fallback to tango-dark as this
+should be generally available (and is pretty nice!)
+
+If solarized is chosen, use elpaca to install it. The project warns
+that MELPA should be treated as unstable, so we prefer to use
+"non-gnu-elpa" instead. This is lower priority than MELPA in elpaca so
+we get the recipe and pass it explicitly.
+
+Because elisp macros do not evaluate their arguments before running,
+it is slightly tricky to make sure elpaca sees its arguments as a
+recipe in the appropriate format. The trick used here is selective
+quoting/unquoting with =`= and =,=: by wrapping in an ~eval~ we ensure
+the macro does not run until the inner function has been evaluated.
+
+#+begin_src elisp :results output none
+
+  (let* ((system-preferred-themes
+          '(("Angel.local" . solarized)
+            ("Angel.lan" . solarized)
+            ("Angel" . solarized)
+            ("ajj-mbp-1" . solarized)
+            ("scpc041.esc.rl.ac.uk" . tango-dark)
+            ("Arctopus" . deeper-blue)))
+         (preferred-theme
+          (cdr (assoc system-name system-preferred-themes)))
+         )
+    (cond
+     ;; No theme if running in a terminal; follow terminal colours
+     ((not (display-graphic-p)) nil)
+
+     ;; Install solarized if necessary, then load
+     ((equal preferred-theme 'solarized)
+      (eval `(elpaca
+                 ,(assoc 'solarized-theme (elpaca-menu-non-gnu-elpa 'index))
+               (require 'solarized)
+               (load-theme 'solarized-dark t)
+               )))
+
+     ;; If not solarized, load by name
+     (preferred-theme (load-theme preferred-theme t))
+
+     ;; Fall back to a nice theme if none specified
+     (t (load-theme 'tango-dark t))))
+
+#+end_src
+
+#+RESULTS:
+| elpaca< | elpaca          | elpaca          | (elpaca :repo https://github.com/progfolio/elpaca.git :ref nil :files (:defaults (:exclude extensions)) :build (:not elpaca--activate-package))                                                                                                                                                                                                       | (finished info queueing-deps queued)            | /home/adam/.emacs.d/elpaca/repos/elpaca/          | /home/adam/.emacs.d/elpaca/builds/elpaca          | nil | nil | nil | (:protocol https :inherit t :depth 1 :repo https://github.com/progfolio/elpaca.git :ref nil :files (:defaults (:exclude extensions)) :build (:not elpaca--activate-package) :package elpaca)                                                                                                                                                                                                                                                                                                                                                                                                                                                      | nil | nil | nil | ((emacs 27.1)) | 0 | (25716 52132 941967 295000) | nil | nil | ((finished (25716 52144 370664 909000) ✓ 11.428 secs 0) (info (25716 52144 370568 111000) Adding Info path 0) (queueing-deps (25716 52144 370508 391000) No dependencies to queue 1) (queueing-deps (25716 52144 369851 154000) Queueing Dependencies 1) (queued (25716 52132 923472 26000) Package queued 1))                                                                                                                                                                                                                                                                            | nil |
+| elpaca< | solarized-theme | solarized-theme | (solarized-theme :source NonGNU ELPA :url https://github.com/bbatsov/solarized-emacs :description The Solarized color theme :recipe (:package solarized-theme :repo https://github.com/bbatsov/solarized-emacs :url https://github.com/bbatsov/solarized-emacs :files (:defaults (:exclude child-theme-example colorlab dev-emacs.d Cask Makefile)))) | (finished activation info queueing-deps queued) | /home/adam/.emacs.d/elpaca/repos/solarized-emacs/ | /home/adam/.emacs.d/elpaca/builds/solarized-theme | nil | nil | nil | (:package solarized-theme :repo bbatsov/solarized-emacs :fetcher github :files (*.el *.el.in dir *.info *.texi *.texinfo doc/dir doc/*.info doc/*.texi doc/*.texinfo lisp/*.el (:exclude .dir-locals.el test.el tests.el *-test.el *-tests.el LICENSE README* *-pkg.el)) :protocol https :inherit t :depth 1 :source NonGNU ELPA :url https://github.com/bbatsov/solarized-emacs :description The Solarized color theme :recipe (:package solarized-theme :repo https://github.com/bbatsov/solarized-emacs :url https://github.com/bbatsov/solarized-emacs :files (:defaults (:exclude child-theme-example colorlab dev-emacs.d Cask Makefile)))) | nil | nil | nil | ((emacs 24.1)) | 0 | (25716 52144 369745 964000) | nil | nil | ((finished (25716 52144 372070 26000) ✓ 0.002 secs 0) (activation (25716 52144 372025 138000) Autoloads cached 0) (activation (25716 52144 371192 519000) Caching autoloads 0) (activation (25716 52144 371142 93000) Package build dir added to load-path 0) (activation (25716 52144 371089 973000) Activating package 0) (info (25716 52144 371071 248000) No Info dir file found 0) (queueing-deps (25716 52144 371013 204000) No dependencies to queue 1) (queueing-deps (25716 52144 370683 394000) Queueing Dependencies 1) (queued (25716 52144 363778 424000) Package queued 1)) | nil |
+
+If running i3 window manager, get some cool transparent theming up and running.
+
+#+begin_src elisp
+  (if (string-equal (getenv "XDG_CURRENT_DESKTOP") "i3")
+      (progn (set-frame-parameter (selected-frame) 'alpha '(90 80))                   
+             (add-to-list 'default-frame-alist '(alpha 90 85))))
+#+end_src
+
+*** Mode-line
+Smart-mode-line is more functional than the defaults and keeps this config simple.
+
+#+BEGIN_SRC elisp
+  (use-package smart-mode-line
+    :config
+    (setq sml/theme 'dark)
+    (setq sml/no-confirm-load-theme t)
+    (sml/setup))
+#+END_SRC
+
+"Volatile highlights" give a bit of visual feedback when you paste in
+a block of text; I find this less disorientating.
+#+BEGIN_SRC elisp
+  (use-package volatile-highlights
+    :config
+    (volatile-highlights-mode t))
+#+END_SRC
+
+**** Workstations
+  :PROPERTIES:
+  :header-args: :tangle (if (member system '("Arctopus" "scpc041")) "emacs/dot-emacs.d/init.el" no)
+  :END:
+Workstations get a bit more bling than servers.
+
+
+Indicating your line number with a flying cat is the most Emacs thing ever
+#+BEGIN_SRC elisp
+  (use-package nyan-mode
+    :config
+    (nyan-mode))
+#+END_SRC
+
+Hamburger menu puts a little menu on the mode line so we don't
+need the top bar any more.
+
+#+BEGIN_SRC elisp
+  (use-package hamburger-menu
+    :config
+    (setq mode-line-front-space 'hamburger-menu-mode-line)
+    (menu-bar-mode -1))
+#+END_SRC
+
+
+**** COMMENT Diminish
+Diminish lets us hide some minor-mode displays
+#+BEGIN_SRC elisp
+  (use-package diminish :ensure t)
+#+END_SRC
+This is also integrated with use-package so we can do things like
+
+#+begin_src elisp :tangle no
+  (use-package some-package
+    :diminish some-mode)
+#+end_src
+
+or
+
+#+begin_src elisp :tangle no
+  (use-package some-package
+    :diminish (some-mode . "short-name"))
+#+end_src
+
+I don't seen an diminish uses in my config files so far, though, so drop it for now.
+
+** Navigation, buffers and files
+
+*** Bookmarks
+Bookmarks are a great and fundamental feature I always forget to
+use. Maybe initialising the session with them will help?
+
+#+BEGIN_SRC elisp
+  (setq inhibit-splash-screen t)
+  (require 'bookmark)
+  (bookmark-bmenu-list)
+  (switch-to-buffer "*Bookmark List*")
+#+END_SRC
+
+*** Quick kill buffer
+
+99% of the time if I kill a buffer without changes I want to kill
+*this* buffer.  The other 1% of the time I can use `C-x B`
+for the buffer menu.
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "C-x k") 'kill-this-buffer)
+#+END_SRC
+
+** Aliases
+   Quick version of commands that are often accessed with M-x but not worth giving their own binding.
+   #+BEGIN_SRC elisp
+   (defalias 'rb 'revert-buffer)
+   (defalias 'lm 'linum-mode)
+   (defalias 'wsm 'whitespace-mode)
+   (defalias 'wsc 'whitespace-cleanup)
+   (defalias 'db 'diff-buffer-with-file)
+   #+END_SRC
+
+** Rebind common commands
+   C-h should be used for deleting things. The most logical binding
+   for help then becomes C-?, although this is occasionally
+   problematic as it can have other hard bindings.
+
+   #+BEGIN_SRC elisp
+   (global-set-key (kbd "C-?") 'help-command)
+   (global-set-key (kbd "M-?") 'mark-paragraph)
+   (global-set-key (kbd "C-h") 'delete-backward-char)
+   (global-set-key (kbd "M-h") 'backward-kill-word)
+   #+END_SRC
+
+   The fastest way to type an uppercase word is to type it lowercase
+   then convert to allcaps. I do this a lot, so let's add a shift
+   option to avoid the M-B "backward-word" part. Might as well do the
+   same for lowercase in case this is hit accidentally.
+
+   #+BEGIN_SRC elisp
+   (global-set-key (kbd "M-U") (lambda () (interactive) (upcase-word -1)))
+   (global-set-key (kbd "M-L") (lambda () (interactive) (downcase-word -1)))
+   #+END_SRC
+
+   Key chords are pretty cool, but take a little getting used to.
+   At the moment I really just use them for some of the standard =C-x= commands,
+   as well as the easy "smush" =hj= as a =M-x= alternative.
+
+   #+BEGIN_SRC elisp
+   (use-package key-chord
+    :config (key-chord-mode 1) (setq key-chord-two-keys-delay 0.05)
+    :chords (("xk" . kill-this-buffer)
+             ("xb" . switch-to-buffer)
+             ("xf" . find-file)
+             ("hj" . execute-extended-command)
+             ("xo" . ace-window)))
+   #+END_SRC
+
+** Backups
+   Backup files are ugly but occasionally useful. Keep them out of sight.
+
+   #+BEGIN_SRC elisp
+   (setq backup-directory-alist
+             `((".*" . ,"~/.emacs-backups")))
+   (setq auto-save-file-name-transforms
+             `((".*" ,"~/.emacs-backups" t)))
+   #+END_SRC
+
+** Completion (menus)
+Currently I favour ivy for completion.
+
+Ivy itself provides a completing-read function which is setup by
+enabling ivy-mode. We also turn off ido-mode here, as it's annoying
+when =C-j= does the wrong thing.
+#+BEGIN_SRC elisp
+  (use-package ivy
+    :config
+    (ivy-mode)
+    (setq ivy-use-virtual-buffers t)
+    (setq ivy-count-format "(%d/%d) ")
+    (ido-mode -1))
+#+END_SRC
+
+Counsel sets up a bunch of ivy-completion functions. It also
+provides Swiper, a fancy isearch.
+
+(The keybinding is set in :config rather than :bind because
+use-package was binding this command even when counsel was not
+installed. May be to do with swiper being a depended package
+rather than part of Counsel?)
+
+#+BEGIN_SRC elisp
+  (use-package counsel
+    :config (counsel-mode)
+    (global-set-key (kbd "C-s") 'swiper))
+#+END_SRC
+
+All-the-icons adds pretty pictures to everything.
+
+*** Workstation bling
+  :PROPERTIES:
+  :header-args: :tangle (if (member system '("Arctopus" "scpc041")) "emacs/dot-emacs.d/init.el" no)
+  :END:
+
+#+BEGIN_SRC elisp 
+  (use-package all-the-icons-ivy
+    :config (all-the-icons-ivy-setup))
+#+END_SRC
+
+*** avy and ace-window
+Avy provides some interesting commands for jumping around. An
+initial "search" brings up short keys which are used to jump to
+the desired match. Quicker than C-s when you are already looking
+at the work you want to jump to.
+#+BEGIN_SRC elisp
+  (use-package avy
+    :bind (("C-;" . avy-goto-word-or-subword-1)
+           ("C-'" . avy-goto-line)
+           ))
+#+END_SRC
+
+Ace-window is a less annoying way of changing window pane; if
+there are more then two, you are given a choice of numbers to
+enter.
+#+BEGIN_SRC elisp
+  (use-package ace-window
+    :bind (("C-x o" . ace-window))
+    :ensure t
+    )
+#+END_SRC
+
+
+*** COMMENT Currently unused
+Ivy-hydra creates a little hydra interface for working in the Ivy
+buffer. This is usually not needed, but it can be nice to, e.g.,
+switch to fuzzy matching.
+#+BEGIN_SRC elisp
+  (use-package ivy-hydra
+    :bind (:map ivy-minibuffer-map ("C-o" . hydra-ivy/body)))
+#+END_SRC
+
+To use the counsel enhancements to projectile,
+#+BEGIN_SRC elisp :tangle no
+  (use-package counsel-projectile
+    :config (counsel-projectile-on))
+#+END_SRC
+
+
+** Completion (content)
+Electric pair mode is fine, I want this for pretty much everything
+other than lisp where paredit is better.
+
+#+BEGIN_SRC elisp
+  (electric-pair-mode 1)
+#+END_SRC
+
+Apparently all the cool kids have moved from auto-complete to Company
+these days. Should probably look into LSP at the same time. Maybe I'll
+go without for a bit first...
+
+** File management
+
+I used to lean heavily on [[https://github.com/sunrise-commander/sunrise-commander][sunrise-commander]], but haven't used it much
+lately. (Partly because I've been enjoying nnn from the terminal!)
+
+Still, it doesn't install nicely with package.el /or/ elpaca right
+now, so if I want to use it the answer is to clone to
+=~/.emacs.d/lisp=.  Maybe I can copy the bootstrap code from elpaca,
+but a better solution would be to figure out a way to elpaca it...
+
+** Programming languages and syntax highlighting
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
+*** Git
+I use Magit for 90% of Git stuff, and CLI for some troubleshooting.
+    #+BEGIN_SRC elisp
+    (use-package magit
+     :chords (("dg" . magit-status)))
+    #+END_SRC
+
+*** Elisp
+Aggressive indent means you don't have to think about indentation.
+#+BEGIN_SRC elisp
+  (use-package aggressive-indent
+    :config (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode))
+#+END_SRC
+
+Paredit forces paired parentheses and provides commands to
+directly edit the Lisp abstract syntax tree.
+
+#+BEGIN_SRC elisp
+  (use-package paredit
+    :config (add-hook 'emacs-lisp-mode-hook #'paredit-mode)
+    (add-hook 'emacs-lisp-mode-hook (lambda () (electric-pair-local-mode -1))))
+#+END_SRC
+
+Highlight parens except when editing contents.
+
+#+BEGIN_SRC elisp
+  (defun show-parens-elisp ()
+    (progn
+      (setq show-paren-style 'mixed
+            show-paren-delay 0.02
+            show-paren-when-point-in-periphery t
+            show-paren-when-point-inside-paren t)
+      (show-paren-mode nil)))
+  (add-hook 'emacs-lisp-mode-hook 'show-parens-elisp)
+#+END_SRC
+
+**** COMMENT Libraries
+Several packages provide vital libraries for modern programming in elisp.
+
+=dash.el= is "a modern list library for emacs"
+#+BEGIN_SRC elisp
+  (use-package dash
+    :ensure t)
+#+END_SRC
+and includes goodies such as macros to avoid lambda clutter. From
+http://www.wilfred.me.uk/blog/2013/03/31/essential-elisp-libraries/,
+#+BEGIN_SRC elisp :tangle no
+  (-filter (lambda (x) (> x 10)) (list 8 9 10 11 12))
+#+END_SRC
+can has the shorthand
+#+BEGIN_SRC elisp :tangle no
+  (--filter (> it 10) (list 8 9 10 11 12))
+#+END_SRC
+which is just lovely!
+
+=s.el= is the "long lost Emacs string manipulation library"
+#+BEGIN_SRC elisp
+  (use-package s
+    :ensure t)
+#+END_SRC
+and has functions that begin with =s-= like =s-trim=, =s-join= etc.
+
+=ht.el= is the missing hash table library for Emacs.
+#+BEGIN_SRC elisp
+  (use-package ht
+    :ensure t)
+#+END_SRC
+Create a hash table with =(ht (key1 val1) (key2 val2) ...)=,
+update it with =(ht-set! mytable "key3" "value3")= and access
+values with =(ht-get mytable key "Fallback")=. Iterate with
+=ht-map= and =ht-each=.
+
+=loop.el= provides "friendly imperative loop structures for Emacs
+lisp".
+#+BEGIN_SRC elisp
+  (use-package loop
+    :ensure t)
+#+END_SRC
+=(loop-while condition body...)=, =(loop-until condition
+body...)= and =(loop-for-each var list body...)= do pretty much
+what you'd expect.
+
+*** Bash
+I used to have a lot of code adding stuff to PATH especially on
+MacOS. Not clear how necessary that still is, let's try dropping it
+for a bit.
+
+If shellcheck and flycheck are available we can use these for
+checking Bash scripts.
+#+BEGIN_SRC elisp
+  (if (executable-find "shellcheck")
+      (use-package flycheck
+        :ensure t
+        :config (add-hook 'sh-mode-hook 'flycheck-mode))
+    )
+#+END_SRC
+
+*** Python
+This has been through a few iterations and I've had some frustrating
+times with Jedi, Elpygen and other packages. For now keep things simple-ish.
+
+First some global things
+#+begin_src elisp
+  ;; Don't open annoying *python-help* buffer
+  (global-eldoc-mode -1)
+
+  ;; Don't use Python2
+  (setq python-shell-interpreter "python3")
+  (setq py-python-command "python3")
+#+end_src
+
+Now set up python-mode
+#+BEGIN_SRC elisp
+  (use-package python-mode
+    :config
+    (setq py-smart-indentation t)
+    (setq python-shell-interpreter "python3")
+    (setq py-python-command "python3")
+    (add-to-list 'auto-mode-alist
+                 '("\\.ipy$" . python-mode))
+    (add-to-list 'auto-mode-alist
+                 '("\\.py$" . python-mode))
+    (add-to-list 'interpreter-mode-alist '("python3" . python-mode))
+    )
+#+END_SRC
+
+Fill-column indicator is mandatory, and now included in Emacs!
+#+BEGIN_SRC elisp
+  (add-hook 'python-mode-hook 'display-fill-column-indicator-mode)
+  (add-hook 'python-mode-hook (lambda () (set-fill-column 79)))
+#+END_SRC
+
+As are highlighted matching parentheses.
+#+BEGIN_SRC elisp
+  (defun show-parens-python ()
+    (progn
+      (setq show-paren-style "mixed"
+            show-paren-delay 0.05
+            show-paren-when-point-in-periphery t)
+      (show-paren-mode nil)))
+  (add-hook 'python-mode-hook 'show-parens-python)
+#+END_SRC
+
+**** COMMENT Formatters
+I have used py-yapf in the past for PEP8 formatting
+#+BEGIN_SRC elisp
+  (if (executable-find "yapf")
+      (use-package py-yapf
+        :ensure t
+        :config
+        (defalias 'py 'py-yapf-buffer)))
+#+END_SRC
+
+As I now interact with a couple of projects that favour Black, perhaps
+it would be worth looking into [[https://github.com/wbolster/emacs-python-black][python-black.el]] which has the useful
+feature that it can use the [[https://github.com/wbolster/black-macchiato][black-macchiato]] package to reformat a
+selected region.
+
+*** COMMENT Julia
+Julia is a beautiful programming language that brings together some
+of the best bits of MATLAB, Python and Lisp with just-in-time
+compilation and a great interactive shell. The main drawback is an
+overhead load time of about 1s, which makes it unsuitable for quick
+utility functions used with shell scripts etc.
+#+BEGIN_SRC elisp
+  (use-package julia-mode)
+  (use-package julia-shell
+    :config
+    (define-key julia-mode-map (kbd "C-c C-c") 'julia-shell-run-region-or-line)
+    (define-key julia-mode-map (kbd "C-c C-s") 'julia-shell-save-and-go))
+#+END_SRC
+
+*** Scheme
+
+Currently I'm playing with Chicken Scheme
+
+#+begin_src elisp
+  (setq scheme-program-name "csi -:c")
+#+end_src
+
+*** Gibbs2
+I made a little syntax-highlighting mode for Gibbs2. Not that I've
+used Gibbs2 for a while, but it doesn't hurt to keep it around!
+
+Set up file associations. (Hmm, =.gin= is also the GULP input
+extension, but I don't have a package for that.)
+#+BEGIN_SRC elisp
+  (use-package gibbs2
+    :config
+    (add-to-list 'auto-mode-alist '("\\.gin\\'" . gibbs2-mode))
+    (add-to-list 'auto-mode-alist '("\\.ing\\'" . gibbs2-mode))
+    )
+#+END_SRC
+
+The code lives in =~/.emacs.d/lisp=
+
+#+begin_src elisp :tangle "emacs/dot-emacs.d/lisp" :mkdirp yes
+  ;;;;; Custom colouring for GIBBS2 files (from guide at http://ergoemacs.org/emacs/elisp_syntax_coloring.html)
+
+  ;; define keyword classes
+  (setq gibbs2-keywords
+        '("title" "nat" "vfree" "mm" "nelectrons" "einf" "pressure" "endpressure" "volume" 
+          "temperature" "endtemperature" "freqg0" "interpolate" "activate" "printfreq"
+          "printfreqs" "eoutput" "drhouse" "end" "phase" "endphase"))
+  (setq gibbs2-phase-keywords
+        '("file" "u" "using" "Z" "poisson" "laue" "fit" "reg" "fix" "tmodel"
+          "prefix" "elec" "nelec" "eec" "pvdata" "units" "interpolate"
+          "fstep"))
+  ;; create regex for each class
+  (setq gibbs2-keywords-regexp (regexp-opt gibbs2-keywords 'words))
+  (setq gibbs2-phase-keywords-regexp (regexp-opt gibbs2-phase-keywords 'words))
+  ;; clear lists from memory
+  (setq gibbs2-keywords nil)
+  (setq gibbs2-phase-keywords nil)
+  ;; set up font lock
+  (setq gibbs2-font-lock-keywords
+        `((,gibbs2-keywords-regexp . font-lock-keyword-face)
+          (,gibbs2-phase-keywords-regexp . font-lock-function-name-face)
+          ))
+
+  ;; syntax table
+  (defvar gibbs2-syntax-table nil "Syntax table for `gibbs2-mode'.")
+  (setq gibbs2-syntax-table
+        (let ((synTable (make-syntax-table)))
+
+          ;; bash style comment: “# …” 
+          (modify-syntax-entry ?# "< b" synTable)
+          (modify-syntax-entry ?\n "> b" synTable)
+
+          synTable))
+
+  ;; define the mode
+  (define-derived-mode gibbs2-mode fundamental-mode
+    "GIBBS2 mode"
+    "Major mode for editing GIBBS2 input files"
+    :syntax-table gibbs2-syntax-table
+
+    (setq font-lock-defaults '((gibbs2-font-lock-keywords)))
+    ;; clear memory
+    (setq gibbs2-keywords-regexp nil)
+    (setq gibbs2-phase-keywords-regexp nil)
+  )
+
+  (provide 'gibbs2)      
+#+end_src
+
+
+** Pretty symbols
+prettify-symbols does some cute replacement of character
+combinations with unicode glyphs. Still playing around with it,
+really. For now we put some config here but activate manually with
+=prettify-symbols-mode=; it seems a bit dangerous to enable globally.
+
+#+begin_src elisp
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (setq prettify-symbols-alist
+                    '(("->" . ?→)
+                      (">=" . ?≥)
+                      ("<=" . ?≤)
+                      ("lambda" . ?λ))
+                    )))
+
+  (add-hook 'emacs-lisp-mode-hook
+            (lambda ()
+              (setq prettify-symbols-alist
+                    '(("lambda" . ?λ)))))
+#+end_src
+
+
+** Remote servers
+
+   TRAMP is pretty great. I only use it with SSH, really, so default
+   to that.
+   #+BEGIN_SRC elisp
+   (setq tramp-default-method "ssh")
+
+   #+END_SRC
+
+
+
+** Backups
+   Backup files are ugly but occasionally useful. Keep them out of sight.
+
+   #+BEGIN_SRC elisp
+   (setq backup-directory-alist
+             `((".*" . ,"~/.emacs-backups")))
+   (setq auto-save-file-name-transforms
+             `((".*" ,"~/.emacs-backups" t)))
+   #+END_SRC
+
+
+** COMMENT Citation
+
+Borrowing some bits from https://www.riccardopinosio.com/blog/posts/zotero_notes_article.html
+
+(All a bit broken at the moment, WIP...)
+
+#+begin_src elisp
+    (org-link-set-parameters "zotero" :follow
+                               (lambda (zpath)
+                                 (browse-url
+                                  (format "zotero:%s" zpath))))
+
+    (setq org-cite-global-bibliography '("~/braindump/zotero_lib.bib"))
+
+    (use-package citar
+      :config
+      (setq org-cite-insert-processor 'citar)
+      (setq org-cite-follow-processor 'citar)
+      (setq org-cite-activate-processor 'citar)
+      (setq citar-bibliography '("~/braindump/zotero_lib.bib"))
+      )
+
+
+    (defadvice citar-file-open (around my/citar-file-trust-zotero)
+    "Leave Zotero-generated file paths alone, especially zotero://..."
+    (cl-letf (((symbol-function 'file-exists-p) #'always)
+              ((symbol-function 'expand-file-name) (lambda (first &rest _) first)))
+      ))
+
+  (add-to-list 'citar-file-open-functions '("pdf" . citar-file-open-external))
+
+  ;;   :around '(citar-file-open citar-file--find-files-in-dirs)
+#+end_src
