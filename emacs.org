@@ -7,7 +7,7 @@ the ~make.el~ script in this repository, and installed with GNU stow.
 This file requires the variable "system" to be set by calling the
 relevant block in [[file:dotfiles.org][dotfiles.org]].
 
-** Packaging setup
+* Packaging setup
   :PROPERTIES:
   :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
   :END:
@@ -75,11 +75,17 @@ Install use-package support and block the queue to ensure it is available in sub
 (elpaca elpaca-use-package
   (elpaca-use-package-mode)
   (setq elpaca-use-package-by-default t))
+(elpaca use-package-chords (require 'use-package-chords))
 
 (elpaca-wait)
 #+end_src
 
-** Paths, environment
+(use-package ships with bind-key, which is actually a pretty neat tool
+its own right and I should use in this config. It provides some nice
+tools for overriding commands more explicitly and/or limiting
+keybindings to certain modes. [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][See source header]]
+
+* Paths, environment
   :PROPERTIES:
   :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
   :END:
@@ -91,12 +97,12 @@ packages that aren't managed with elpaca. (i.e. experiments or simple personal p
   (add-to-list 'load-path "~/.emacs.d/lisp")
 #+end_src
 
-** Appearance
+* Appearance
   :PROPERTIES:
   :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
   :END:
 
-*** Native tweaks
+** Native tweaks
 
 Hide toolbar, scrollbars
 #+begin_src elisp
@@ -142,7 +148,7 @@ be confused with find-file, C-x C-f!)
   (setq fill-column 79)
 #+END_SRC
 
-*** Fonts
+** Fonts
 
 Fonts are specified on a per-machine basis to account for
 different monitors, installations etc.
@@ -173,7 +179,7 @@ gone so we avoid cluttering the namespace.
           (set-frame-font preferred-font nil t))))
 #+END_SRC
 
-*** Themes
+** Themes
 Use similar logic as for font sizes to set different theme
 defaults for different machines. Fallback to tango-dark as this
 should be generally available (and is pretty nice!)
@@ -233,7 +239,7 @@ If running i3 window manager, get some cool transparent theming up and running.
              (add-to-list 'default-frame-alist '(alpha 90 85))))
 #+end_src
 
-*** Mode-line
+** Mode-line
 Smart-mode-line is more functional than the defaults and keeps this config simple.
 
 #+BEGIN_SRC elisp
@@ -252,7 +258,7 @@ a block of text; I find this less disorientating.
     (volatile-highlights-mode t))
 #+END_SRC
 
-**** Workstations
+*** Workstations
   :PROPERTIES:
   :header-args: :tangle (if (member system '("Arctopus" "scpc041")) "emacs/dot-emacs.d/init.el" no)
   :END:
@@ -277,7 +283,7 @@ need the top bar any more.
 #+END_SRC
 
 
-**** COMMENT Diminish
+*** COMMENT Diminish
 Diminish lets us hide some minor-mode displays
 #+BEGIN_SRC elisp
   (use-package diminish :ensure t)
@@ -298,20 +304,30 @@ or
 
 I don't seen an diminish uses in my config files so far, though, so drop it for now.
 
-** Navigation, buffers and files
 
-*** Bookmarks
+* Navigation, buffers and files
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
+** Bookmarks
 Bookmarks are a great and fundamental feature I always forget to
 use. Maybe initialising the session with them will help?
 
 #+BEGIN_SRC elisp
-  (setq inhibit-splash-screen t)
-  (require 'bookmark)
-  (bookmark-bmenu-list)
-  (switch-to-buffer "*Bookmark List*")
+    (setq inhibit-splash-screen t)
+    (require 'bookmark)
+    (bookmark-bmenu-list)
+
+    (add-hook 'emacs-startup-hook
+              (lambda ()
+                  (switch-to-buffer "*Bookmark List*")))
 #+END_SRC
 
-*** Quick kill buffer
+The Elpaca README says this hook should really go in
+~elpaca-after-init-hook~ but that doesn't seem to work.
+
+** Quick kill buffer
 
 99% of the time if I kill a buffer without changes I want to kill
 *this* buffer.  The other 1% of the time I can use `C-x B`
@@ -321,7 +337,11 @@ for the buffer menu.
   (global-set-key (kbd "C-x k") 'kill-this-buffer)
 #+END_SRC
 
-** Aliases
+* Aliases
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
    Quick version of commands that are often accessed with M-x but not worth giving their own binding.
    #+BEGIN_SRC elisp
    (defalias 'rb 'revert-buffer)
@@ -331,7 +351,11 @@ for the buffer menu.
    (defalias 'db 'diff-buffer-with-file)
    #+END_SRC
 
-** Rebind common commands
+* Rebind common commands
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
    C-h should be used for deleting things. The most logical binding
    for help then becomes C-?, although this is occasionally
    problematic as it can have other hard bindings.
@@ -367,7 +391,11 @@ for the buffer menu.
              ("xo" . ace-window)))
    #+END_SRC
 
-** Backups
+* Backups
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
    Backup files are ugly but occasionally useful. Keep them out of sight.
 
    #+BEGIN_SRC elisp
@@ -377,7 +405,11 @@ for the buffer menu.
              `((".*" ,"~/.emacs-backups" t)))
    #+END_SRC
 
-** Completion (menus)
+* Completion (menus)
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
 Currently I favour ivy for completion.
 
 Ivy itself provides a completing-read function which is setup by
@@ -408,7 +440,7 @@ rather than part of Counsel?)
 
 All-the-icons adds pretty pictures to everything.
 
-*** Workstation bling
+** Workstation bling
   :PROPERTIES:
   :header-args: :tangle (if (member system '("Arctopus" "scpc041")) "emacs/dot-emacs.d/init.el" no)
   :END:
@@ -418,7 +450,7 @@ All-the-icons adds pretty pictures to everything.
     :config (all-the-icons-ivy-setup))
 #+END_SRC
 
-*** avy and ace-window
+** avy and ace-window
 Avy provides some interesting commands for jumping around. An
 initial "search" brings up short keys which are used to jump to
 the desired match. Quicker than C-s when you are already looking
@@ -441,7 +473,7 @@ enter.
 #+END_SRC
 
 
-*** COMMENT Currently unused
+** COMMENT Currently unused
 Ivy-hydra creates a little hydra interface for working in the Ivy
 buffer. This is usually not needed, but it can be nice to, e.g.,
 switch to fuzzy matching.
@@ -457,7 +489,11 @@ To use the counsel enhancements to projectile,
 #+END_SRC
 
 
-** Completion (content)
+* Completion (content)
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
 Electric pair mode is fine, I want this for pretty much everything
 other than lisp where paredit is better.
 
@@ -469,7 +505,7 @@ Apparently all the cool kids have moved from auto-complete to Company
 these days. Should probably look into LSP at the same time. Maybe I'll
 go without for a bit first...
 
-** File management
+* File management
 
 I used to lean heavily on [[https://github.com/sunrise-commander/sunrise-commander][sunrise-commander]], but haven't used it much
 lately. (Partly because I've been enjoying nnn from the terminal!)
@@ -479,19 +515,19 @@ now, so if I want to use it the answer is to clone to
 =~/.emacs.d/lisp=.  Maybe I can copy the bootstrap code from elpaca,
 but a better solution would be to figure out a way to elpaca it...
 
-** Programming languages and syntax highlighting
+* Programming languages and syntax highlighting
   :PROPERTIES:
   :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
   :END:
 
-*** Git
+** Git
 I use Magit for 90% of Git stuff, and CLI for some troubleshooting.
     #+BEGIN_SRC elisp
     (use-package magit
      :chords (("dg" . magit-status)))
     #+END_SRC
 
-*** Elisp
+** Elisp
 Aggressive indent means you don't have to think about indentation.
 #+BEGIN_SRC elisp
   (use-package aggressive-indent
@@ -520,7 +556,7 @@ Highlight parens except when editing contents.
   (add-hook 'emacs-lisp-mode-hook 'show-parens-elisp)
 #+END_SRC
 
-**** COMMENT Libraries
+*** COMMENT Libraries
 Several packages provide vital libraries for modern programming in elisp.
 
 =dash.el= is "a modern list library for emacs"
@@ -566,7 +602,7 @@ lisp".
 body...)= and =(loop-for-each var list body...)= do pretty much
 what you'd expect.
 
-*** Bash
+** Bash
 I used to have a lot of code adding stuff to PATH especially on
 MacOS. Not clear how necessary that still is, let's try dropping it
 for a bit.
@@ -581,7 +617,7 @@ checking Bash scripts.
     )
 #+END_SRC
 
-*** Python
+** Python
 This has been through a few iterations and I've had some frustrating
 times with Jedi, Elpygen and other packages. For now keep things simple-ish.
 
@@ -627,7 +663,7 @@ As are highlighted matching parentheses.
   (add-hook 'python-mode-hook 'show-parens-python)
 #+END_SRC
 
-**** COMMENT Formatters
+*** COMMENT Formatters
 I have used py-yapf in the past for PEP8 formatting
 #+BEGIN_SRC elisp
   (if (executable-find "yapf")
@@ -642,7 +678,7 @@ it would be worth looking into [[https://github.com/wbolster/emacs-python-black]
 feature that it can use the [[https://github.com/wbolster/black-macchiato][black-macchiato]] package to reformat a
 selected region.
 
-*** COMMENT Julia
+** COMMENT Julia
 Julia is a beautiful programming language that brings together some
 of the best bits of MATLAB, Python and Lisp with just-in-time
 compilation and a great interactive shell. The main drawback is an
@@ -656,7 +692,7 @@ utility functions used with shell scripts etc.
     (define-key julia-mode-map (kbd "C-c C-s") 'julia-shell-save-and-go))
 #+END_SRC
 
-*** Scheme
+** Scheme
 
 Currently I'm playing with Chicken Scheme
 
@@ -664,7 +700,7 @@ Currently I'm playing with Chicken Scheme
   (setq scheme-program-name "csi -:c")
 #+end_src
 
-*** Gibbs2
+** Gibbs2
 I made a little syntax-highlighting mode for Gibbs2. Not that I've
 used Gibbs2 for a while, but it doesn't hurt to keep it around!
 
@@ -731,7 +767,11 @@ The code lives in =~/.emacs.d/lisp=
 #+end_src
 
 
-** Pretty symbols
+* Pretty symbols
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
 prettify-symbols does some cute replacement of character
 combinations with unicode glyphs. Still playing around with it,
 really. For now we put some config here but activate manually with
@@ -754,29 +794,33 @@ really. For now we put some config here but activate manually with
 #+end_src
 
 
-** Remote servers
+* Remote servers
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
 
    TRAMP is pretty great. I only use it with SSH, really, so default
    to that.
    #+BEGIN_SRC elisp
    (setq tramp-default-method "ssh")
-
    #+END_SRC
 
+* Backups
+  :PROPERTIES:
+  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :END:
+
+Backup files are ugly but occasionally useful. Keep them out of sight.
+
+#+BEGIN_SRC elisp
+  (setq backup-directory-alist
+            `((".*" . ,"~/.emacs-backups")))
+  (setq auto-save-file-name-transforms
+            `((".*" ,"~/.emacs-backups" t)))
+#+END_SRC
 
 
-** Backups
-   Backup files are ugly but occasionally useful. Keep them out of sight.
-
-   #+BEGIN_SRC elisp
-   (setq backup-directory-alist
-             `((".*" . ,"~/.emacs-backups")))
-   (setq auto-save-file-name-transforms
-             `((".*" ,"~/.emacs-backups" t)))
-   #+END_SRC
-
-
-** COMMENT Citation
+* COMMENT Citation
 
 Borrowing some bits from https://www.riccardopinosio.com/blog/posts/zotero_notes_article.html
 
