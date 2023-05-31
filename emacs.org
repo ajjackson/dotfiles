@@ -4,8 +4,9 @@
 Literate Emacs configuration. This file is intended to be tangled with
 the ~make.el~ script in this repository, and installed with GNU stow.
 
-This file requires the variable "system" to be set by calling the
-relevant block in [[file:dotfiles.org][dotfiles.org]].
+This file requires the variable "system" to be set and a few
+functions/macros created by calling the relevant block in
+[[file:dotfiles.org][dotfiles.org]].
 
 * Packaging setup
   :PROPERTIES:
@@ -51,6 +52,7 @@ This is the boilerplate to install elpaca if unavailable and configure it:
                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
                  ((require 'elpaca))
                  ((elpaca-generate-autoloads "elpaca" repo)))
+
             (kill-buffer buffer)
           (error "%s" (with-current-buffer buffer (buffer-string))))
       ((error) (warn "%s" err) (delete-directory repo 'recursive))))
@@ -63,21 +65,20 @@ This is the boilerplate to install elpaca if unavailable and configure it:
 #+end_src
 
 #+RESULTS:
-  
-Disable ~package.el~:
-#+begin_src elisp
+We also need to disable package.el in the "early-init" file
+#+begin_src elisp :tangle emacs/dot-emacs.d/early-init.el
   (setq package-enable-at-startup nil)
 #+end_src
 
 Install use-package support and block the queue to ensure it is available in subsequent setup.
 
 #+begin_src elisp
-(elpaca elpaca-use-package
-  (elpaca-use-package-mode)
-  (setq elpaca-use-package-by-default t))
-(elpaca use-package-chords (require 'use-package-chords))
+  (elpaca elpaca-use-package
+          (elpaca-use-package-mode)
+          (setq elpaca-use-package-by-default t))
+  (elpaca use-package-chords (require 'use-package-chords))
 
-(elpaca-wait)
+  (elpaca-wait)
 #+end_src
 
 (use-package ships with bind-key, which is actually a pretty neat tool
@@ -242,8 +243,15 @@ If running i3 window manager, get some cool transparent theming up and running.
 ** Mode-line
 Smart-mode-line is more functional than the defaults and keeps this config simple.
 
+(Initially I was having some trouble with the use-package calls
+here. I think the problem is that elpaca-process-queues isn't getting
+called when it should? May need to stick it in this file.  I can see
+that it is indeed on after-init-hook, but maybe this is somehow too
+late? Running it manually in the new Emacs session also doesn't seem
+to do much.)
 #+BEGIN_SRC elisp
   (use-package smart-mode-line
+    :ensure t
     :config
     (setq sml/theme 'dark)
     (setq sml/no-confirm-load-theme t)
@@ -258,9 +266,9 @@ a block of text; I find this less disorientating.
     (volatile-highlights-mode t))
 #+END_SRC
 
-*** Workstations
+** Workstations
   :PROPERTIES:
-  :header-args: :tangle (if (member system '("Arctopus" "scpc041")) "emacs/dot-emacs.d/init.el" no)
+  :header-args: :tangle (if-workstation "emacs/dot-emacs.d/init.el" no)
   :END:
 Workstations get a bit more bling than servers.
 
@@ -303,7 +311,6 @@ or
 #+end_src
 
 I don't seen an diminish uses in my config files so far, though, so drop it for now.
-
 
 * Navigation, buffers and files
   :PROPERTIES:
@@ -381,14 +388,16 @@ for the buffer menu.
    At the moment I really just use them for some of the standard =C-x= commands,
    as well as the easy "smush" =hj= as a =M-x= alternative.
 
+   The key-chord package was already enabled as part of use-package so
+   we just some preferences.
    #+BEGIN_SRC elisp
-   (use-package key-chord
-    :config (key-chord-mode 1) (setq key-chord-two-keys-delay 0.05)
-    :chords (("xk" . kill-this-buffer)
-             ("xb" . switch-to-buffer)
-             ("xf" . find-file)
-             ("hj" . execute-extended-command)
-             ("xo" . ace-window)))
+     (key-chord-mode 1)
+     (setq key-chord-two-keys-delay 0.05)
+     (key-chord-define-global "xk" 'kill-this-buffer)
+     (key-chord-define-global "xb" 'switch-to-buffer)
+     (key-chord-define-global "xf" 'find-file)
+     (key-chord-define-global "hj" 'execute-extended-command)
+     (key-chord-define-global "xo" 'ace-window)
    #+END_SRC
 
 * Backups
@@ -422,6 +431,7 @@ when =C-j= does the wrong thing.
     (setq ivy-use-virtual-buffers t)
     (setq ivy-count-format "(%d/%d) ")
     (ido-mode -1))
+
 #+END_SRC
 
 Counsel sets up a bunch of ivy-completion functions. It also
@@ -433,16 +443,17 @@ installed. May be to do with swiper being a depended package
 rather than part of Counsel?)
 
 #+BEGIN_SRC elisp
-  (use-package counsel
-    :config (counsel-mode)
-    (global-set-key (kbd "C-s") 'swiper))
+    (use-package counsel
+      :config
+      (counsel-mode)
+      (global-set-key (kbd "C-s") 'swiper))
 #+END_SRC
 
 All-the-icons adds pretty pictures to everything.
 
 ** Workstation bling
   :PROPERTIES:
-  :header-args: :tangle (if (member system '("Arctopus" "scpc041")) "emacs/dot-emacs.d/init.el" no)
+  :header-args: :tangle (if-workstation "emacs/dot-emacs.d/init.el" no)
   :END:
 
 #+BEGIN_SRC elisp 
@@ -468,10 +479,8 @@ enter.
 #+BEGIN_SRC elisp
   (use-package ace-window
     :bind (("C-x o" . ace-window))
-    :ensure t
     )
 #+END_SRC
-
 
 ** COMMENT Currently unused
 Ivy-hydra creates a little hydra interface for working in the Ivy
@@ -515,6 +524,7 @@ now, so if I want to use it the answer is to clone to
 =~/.emacs.d/lisp=.  Maybe I can copy the bootstrap code from elpaca,
 but a better solution would be to figure out a way to elpaca it...
 
+
 * Programming languages and syntax highlighting
   :PROPERTIES:
   :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
@@ -523,8 +533,8 @@ but a better solution would be to figure out a way to elpaca it...
 ** Git
 I use Magit for 90% of Git stuff, and CLI for some troubleshooting.
     #+BEGIN_SRC elisp
-    (use-package magit
-     :chords (("dg" . magit-status)))
+      (use-package magit
+       :chords (("dg" . magit-status)))
     #+END_SRC
 
 ** Elisp
@@ -708,6 +718,7 @@ Set up file associations. (Hmm, =.gin= is also the GULP input
 extension, but I don't have a package for that.)
 #+BEGIN_SRC elisp
   (use-package gibbs2
+    :elpaca nil
     :config
     (add-to-list 'auto-mode-alist '("\\.gin\\'" . gibbs2-mode))
     (add-to-list 'auto-mode-alist '("\\.ing\\'" . gibbs2-mode))
@@ -716,7 +727,7 @@ extension, but I don't have a package for that.)
 
 The code lives in =~/.emacs.d/lisp=
 
-#+begin_src elisp :tangle "emacs/dot-emacs.d/lisp" :mkdirp yes
+#+begin_src elisp :tangle "emacs/dot-emacs.d/lisp/gibbs2.el" :mkdirp yes
   ;;;;; Custom colouring for GIBBS2 files (from guide at http://ergoemacs.org/emacs/elisp_syntax_coloring.html)
 
   ;; define keyword classes
@@ -819,6 +830,221 @@ Backup files are ugly but occasionally useful. Keep them out of sight.
             `((".*" ,"~/.emacs-backups" t)))
 #+END_SRC
 
+* Org
+
+Org config is big, so we use noweb to manage the sections and pull
+them together.
+
+#+begin_src elisp :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes :noweb no-export
+  (use-package org
+    :config
+    <<org-agenda()>>
+    <<org-babel>>
+    :bind
+    <<org-bindings>>
+    )
+#+end_src
+
+** Agenda
+On my main workstation/laptop machines, use org-mode to manage agenda,
+TODO items etc. I fell off the task-management wagon a couple of years
+again, time for a fresh start.
+
+I hard-code the location of org-agenda-files, then this can be written
+to point to the appropriate place on a given machine.
+
+This bit of lisp checks if we are using this block, and in drags the
+configuration in from another blocks with noweb if so. Otherwise, we
+return nothing so that servers etc. can skip this code entirely in
+their init.el file.
+
+(This does mean that the code will be passed as a Lisp AST so doesn't
+get nicely formatted in the resulting file.)
+
+#+name: org-agenda
+#+begin_src elisp :tangle no :noweb no-export
+  (if-workstation
+       '(progn
+          <<org-agenda-setup>>)
+    ""
+      )
+
+#+end_src
+
+#+begin_src elisp :noweb-ref org-agenda-setup
+  (defun set-if-exists (variable file &optional fallback)
+   (set variable
+     (if (file-exists-p file) file fallback)))
+
+  (set-if-exists 'org-directory "~/Documents/org-mode" org-directory)
+  (set-if-exists 'org-agenda-files "~/Documents/org-mode/agenda-files.txt" org-directory)
+
+  (setq org-log-done t
+        org-export-backends '(latex md ascii html beamer)
+        ;; some other interesting backends are icalendar, reveal
+        ;; For more formats there is ox-pandoc package.
+        org-enforce-todo-dependencies t
+        org-agenda-dim-blocked-tasks 'invisible
+        org-todo-keywords
+        '((sequence "TODO(t)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)")
+          (sequence "RUNNING(r)" "|")
+          (sequence "|" "DELEGATED(l)" "CANCELLED(c)"))
+        )
+
+  ;; This function is handy but I should assign a hotkey or something...
+  (defun org-agenda-cycle-blocked-visibility ()
+      (interactive)
+      (setq org-agenda-dim-blocked-tasks
+            (cond
+             ((eq org-agenda-dim-blocked-tasks 'invisible) nil)
+             ((eq org-agenda-dim-blocked-tasks nil) t)
+             (t 'invisible)
+             )
+            )
+      (org-agenda-redo)
+      (message "Blocked tasks %s"
+               (cond
+                ((eq org-agenda-dim-blocked-tasks 'invisible) "omitted")
+                ((eq org-agenda-dim-blocked-tasks nil) "included")
+                (t "dimmed"))))
+#+end_src
+
+Capture templates: quickly create TODO items and notes and file
+them. Hopefully notes.org will soon be replaced by org-roam stuff, but
+I need to get the basics cleaned up first.
+
+#+begin_src elisp :noweb-ref org-agenda-setup
+  (let ((todo-file (concat org-directory "/todo.org"))
+        (notes-file (concat org-directory "/notes.org")))
+    (setq org-capture-templates
+          (quote (
+                  ("s" "todo list: reSearch" entry
+                   (file+headline todo-file "RESEARCH") "** TODO %? %^g %i \n" :empty-lines 0)
+                  ("t" "Todo list" entry
+                   (file+headline todo-file "LIFE") "* TODO %? %^g %i \n")
+                  ("o" "Office work" entry
+                   (file+headline todo-file "OFFICE") "* TODO %? %^g %i \n" :empty-lines 0)
+                  ("n" "General notes" entry
+                   (file notes-file) "")))))
+#+end_src
+
+Agenda views: lets me easily narrow focus to work or non-work and pick
+up dangling TODO items.
+#+begin_src elisp :noweb-ref org-agenda-setup
+  (setq org-agenda-custom-commands
+        (quote (
+                ("h" "\"home\": Agenda and unscheduled non-work TODOs"
+                 ((agenda "" nil) (tags-todo "-work-SCHEDULED={.+}" nil)) nil nil)
+                ("H" "\"Home\": Non-work unscheduled TODOs" tags "-work-SCHEDULED={.+}" nil)
+                ("w" "Unscheduled :work:" tags "work-SCHEDULED={.+}" nil)
+                ("n" "Agenda and all TODOs" ((agenda "" nil) (alltodo "" nil)) nil))))
+#+end_src
+
+** Org-babel
+Org-babel allows for inline code execution as well as literate files
+such as this one. We need to explicitly enable the languages we want to allow.
+
+#+BEGIN_SRC elisp :noweb-ref org-babel
+  (setq org-babel-load-languages (quote ((python . t)
+                                         (emacs-lisp . t)
+                                         (shell . t)
+                                         (C . t)
+                                         (scheme . t)
+                                         ;; Not used lately, set t if so
+                                         (ditaa . nil)
+                                         (gnuplot . nil)
+                                         (julia . nil)
+                                         (haskell . nil)
+                                         (awk . nil)
+                                         (clojure . nil)
+                                         (dot . nil)
+  )))
+
+  (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+#+END_SRC
+
+Make the source blocks work a bit more fluidly with a few more flags.
+
+#+BEGIN_SRC elisp :noweb-ref org-babel
+  (setq org-src-tab-acts-natively t
+        org-src-fontify-natively t)
+#+END_SRC
+
+Run code blocks on `C-c C-c` without confirmation.
+
+#+BEGIN_SRC elisp :noweb-ref org-babel
+  (setq org-confirm-babel-evaluate nil)
+#+END_SRC
+
+Use Python3 because it isn't 2015 any more
+
+#+BEGIN_SRC elisp :noweb-ref org-babel
+  (setq org-babel-python-command "python3")
+#+END_SRC
+
+#+end_src
+
+
+** Appearance
+Make a pretty arrow instead of ellipsis for expandable headlines.
+
+#+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+  (setq org-ellipsis " ⤵")
+  (add-hook 'org-mode-hook (lambda () (set-face-underline 'org-ellipsis nil)))
+#+end_src
+
+Use org-superstar for nice symbols (successor to org-bullets)
+#+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+  (use-package org-superstar
+    :config (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+#+end_src
+
+** Key bindings
+
+As well as some useful agenda-related bindings, we override the
+org-mode keybinding for C-' (cycle through agenda files), to
+restore the more useful =avy-goto-line=.
+
+#+name: org-bindings
+#+begin_src elisp
+    (("C-c l" . org-store-link)
+     ("C-c a" . org-agenda)
+     ("C-c t" . org-capture)
+     ("C-c b" . org-ido-switchb)
+     :map org-mode-map
+     ("C-'" . avy-goto-line))
+#+end_src
+
+** Structure templates
+We can't do the tab-completion from ~<~ shortcut any more for creating
+blocks in org-mode; now we use ~C-c C-,~. Ah well!
+
+Create a template for python code as use that one the most. (Well,
+outside of these files...)
+#+begin_src elisp :noweb-ref org-agenda-setup
+  (add-to-list 'org-structure-template-alist '("p" . "src python"))
+#+end_src
+
+** org-present
+Org-present is a handy mode for simple presentations from an org outline
+
+#+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+  (use-package org-present
+    :config
+    (add-hook 'org-present-mode-hook
+              (lambda ()
+                (org-present-big)
+                (org-display-inline-images)
+                (org-present-hide-cursor)
+                (org-present-read-only)))
+    (add-hook 'org-present-mode-quit-hook
+              (lambda ()
+                (org-present-small)
+                (org-remove-inline-images)
+                (org-present-show-cursor)
+                (org-present-show-cursor)
+                (org-present-read-write))))
+#+end_src
 
 * COMMENT Citation
 
@@ -852,4 +1078,13 @@ Borrowing some bits from https://www.riccardopinosio.com/blog/posts/zotero_notes
   (add-to-list 'citar-file-open-functions '("pdf" . citar-file-open-external))
 
   ;;   :around '(citar-file-open citar-file--find-files-in-dirs)
+#+end_src
+
+* Cleanup
+If use-package configs don't seem to be launching, try putting this
+code above a suspicious part of the config and see if everything above
+that point comes back to life...
+
+#+begin_src elisp
+;; (elpaca-process-queues)
 #+end_src
