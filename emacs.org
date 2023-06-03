@@ -236,7 +236,7 @@ If running i3 window manager, get some cool transparent theming up and running.
 
 #+begin_src elisp
   (if (string-equal (getenv "XDG_CURRENT_DESKTOP") "i3")
-      (progn (set-frame-parameter (selected-frame) 'alpha '(90 80))                   
+      (progn (set-frame-parameter (selected-frame) 'alpha '(90 80))
              (add-to-list 'default-frame-alist '(alpha 90 85))))
 #+end_src
 
@@ -456,7 +456,7 @@ All-the-icons adds pretty pictures to everything.
   :header-args: :tangle (if-workstation "emacs/dot-emacs.d/init.el" no)
   :END:
 
-#+BEGIN_SRC elisp 
+#+BEGIN_SRC elisp
   (use-package all-the-icons-ivy
     :config (all-the-icons-ivy-setup))
 #+END_SRC
@@ -744,7 +744,7 @@ The code lives in =~/.emacs.d/lisp=
 
   ;; define keyword classes
   (setq gibbs2-keywords
-        '("title" "nat" "vfree" "mm" "nelectrons" "einf" "pressure" "endpressure" "volume" 
+        '("title" "nat" "vfree" "mm" "nelectrons" "einf" "pressure" "endpressure" "volume"
           "temperature" "endtemperature" "freqg0" "interpolate" "activate" "printfreq"
           "printfreqs" "eoutput" "drhouse" "end" "phase" "endphase"))
   (setq gibbs2-phase-keywords
@@ -768,7 +768,7 @@ The code lives in =~/.emacs.d/lisp=
   (setq gibbs2-syntax-table
         (let ((synTable (make-syntax-table)))
 
-          ;; bash style comment: “# …” 
+          ;; bash style comment: “# …”
           (modify-syntax-entry ?# "< b" synTable)
           (modify-syntax-entry ?\n "> b" synTable)
 
@@ -786,7 +786,7 @@ The code lives in =~/.emacs.d/lisp=
     (setq gibbs2-phase-keywords-regexp nil)
   )
 
-  (provide 'gibbs2)      
+  (provide 'gibbs2)
 #+end_src
 
 
@@ -1068,7 +1068,11 @@ I'm still new to org-roam, best start with basics.
 
   (use-package org-roam
     :config
-    (org-roam-db-autosync-mode))
+    (org-roam-setup)
+    (org-roam-db-autosync-mode)
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+            ("C-c n f" . org-roam-node-find)
+            ("C-c n i" . org-roam-node-insert)))
 
 #+end_src
 
