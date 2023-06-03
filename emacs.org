@@ -537,6 +537,18 @@ I use Magit for 90% of Git stuff, and CLI for some troubleshooting.
        :chords (("dg" . magit-status)))
     #+END_SRC
 
+We can highlight changes in the "gutters" with a few more packages.
+The "fringe" version is nicer as it doesn't clash with e.g. linum mode
+-- but it only works in graphical sessions.
+
+#+begin_src elisp
+    (use-package git-gutter
+      :hook (prog-mode . git-gutter-mode)
+      :config (setq git-gutter:update-interval 0.1))
+    (use-package git-gutter-fringe
+      :if  (display-graphic-p))
+#+end_src
+
 ** Elisp
 Aggressive indent means you don't have to think about indentation.
 #+BEGIN_SRC elisp
