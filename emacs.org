@@ -876,8 +876,8 @@ get nicely formatted in the resulting file.)
    (set variable
      (if (file-exists-p file) file fallback)))
 
-  (set-if-exists 'org-directory "~/Documents/org-mode" org-directory)
-  (set-if-exists 'org-agenda-files "~/Documents/org-mode/agenda-files.txt" org-directory)
+  (set-if-exists 'org-directory "~/org" org-directory)
+  (set-if-exists 'org-agenda-files "~/org/agenda-files.txt" org-directory)
 
   (setq org-log-done t
         org-export-backends '(latex md ascii html beamer)
@@ -917,15 +917,15 @@ I need to get the basics cleaned up first.
   (let ((todo-file (concat org-directory "/todo.org"))
         (notes-file (concat org-directory "/notes.org")))
     (setq org-capture-templates
-          (quote (
-                  ("s" "todo list: reSearch" entry
-                   (file+headline todo-file "RESEARCH") "** TODO %? %^g %i \n" :empty-lines 0)
-                  ("t" "Todo list" entry
-                   (file+headline todo-file "LIFE") "* TODO %? %^g %i \n")
-                  ("o" "Office work" entry
-                   (file+headline todo-file "OFFICE") "* TODO %? %^g %i \n" :empty-lines 0)
-                  ("n" "General notes" entry
-                   (file notes-file) "")))))
+          `(
+            ("s" "todo list: reSearch" entry
+             (file+headline ,todo-file "RESEARCH") "** TODO %? %^g %i \n" :empty-lines 0)
+            ("t" "Todo list" entry
+             (file+headline ,todo-file "LIFE") "* TODO %? %^g %i \n")
+            ("o" "Office work" entry
+             (file+headline ,todo-file "OFFICE") "* TODO %? %^g %i \n" :empty-lines 0)
+            ("n" "General notes" entry
+             (file ,notes-file) ""))))
 #+end_src
 
 Agenda views: lets me easily narrow focus to work or non-work and pick
