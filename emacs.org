@@ -1046,6 +1046,25 @@ Org-present is a handy mode for simple presentations from an org outline
                 (org-present-read-write))))
 #+end_src
 
+
+** Roam
+I'm still new to org-roam, best start with basics.
+
+#+begin_src elisp tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+  (setq org-roam-directory (concat org-directory "/roam"))
+  (make-directory org-roam-directory t)
+
+  (use-package org-roam
+    :config
+    (org-roam-db-autosync-mode))
+
+#+end_src
+
+#+RESULTS:
+
+The key commands are org-roam-node-insert, org-roam-node-find,
+org-roam-capture. I'll probably want to assign hotkeys to those.
+
 * COMMENT Citation
 
 Borrowing some bits from https://www.riccardopinosio.com/blog/posts/zotero_notes_article.html
