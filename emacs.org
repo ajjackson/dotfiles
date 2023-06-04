@@ -856,6 +856,8 @@ them together.
     <<org-babel>>
     :bind
     <<org-bindings>>
+    :hook
+    (org-mode . org-indent-mode)
     )
 #+end_src
 
@@ -1008,8 +1010,11 @@ Make a pretty arrow instead of ellipsis for expandable headlines.
 
 Use org-superstar for nice symbols (successor to org-bullets)
 #+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
-    (use-package org-superstar
-      :hook (org-mode-hook . (lambda () (org-superstar-mode 1))))
+  (use-package org-superstar
+       :after org
+       :hook (org-mode . (lambda () (org-superstar-mode 1)))
+    )
+
 #+end_src
 
 ** Key bindings
@@ -1020,12 +1025,12 @@ restore the more useful =avy-goto-line=.
 
 #+name: org-bindings
 #+begin_src elisp
-    (("C-c l" . org-store-link)
-     ("C-c a" . org-agenda)
-     ("C-c t" . org-capture)
-     ("C-c b" . org-ido-switchb)
-     :map org-mode-map
-     ("C-'" . avy-goto-line))
+  (("C-c l" . org-store-link)
+   ("C-c a" . org-agenda)
+   ("C-c t" . org-capture)
+   ("C-c b" . org-ido-switchb)
+   :map org-mode-map
+   ("C-'" . avy-goto-line))
 #+end_src
 
 ** Structure templates
@@ -1066,6 +1071,9 @@ The capture template scheme is borrowed from the creator of roam's
 personal scheme, but I have re-added the date metadata to filenames.
 https://jethrokuan.github.io/org-roam-guide/
 
+Dailies setup is taken from
+https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
+
 #+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
   (setq org-roam-directory (concat org-directory "/roam"))
   (make-directory org-roam-directory t)
@@ -1073,10 +1081,16 @@ https://jethrokuan.github.io/org-roam-guide/
   (use-package org-roam
     :bind (("C-c n l" . org-roam-buffer-toggle)
             ("C-c n f" . org-roam-node-find)
-            ("C-c n i" . org-roam-node-insert))
+            ("C-c n i" . org-roam-node-insert)
+            :map org-roam-dailies-map
+            ("Y" . org-roam-dailies-capture-yesterday)
+            ("T" . org-roam-dailies-capture-tomorrow))
+    :bind-keymap
+    ("C-c n d" . org-roam-dailies-map)
     :config
     (org-roam-setup)
     (org-roam-db-autosync-mode)
+    (require 'org-roam-dailies)
     (setq org-roam-capture-templates
       '(("m" "main" plain
          "%?"
@@ -1095,7 +1109,6 @@ https://jethrokuan.github.io/org-roam-guide/
          :immediate-finish t
          :unnarrowed t)))
     )
-
 #+end_src
 
 #+RESULTS:
