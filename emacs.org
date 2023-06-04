@@ -553,16 +553,17 @@ The "fringe" version is nicer as it doesn't clash with e.g. linum mode
 Aggressive indent means you don't have to think about indentation.
 #+BEGIN_SRC elisp
   (use-package aggressive-indent
-    :config (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode))
+    :hook (emacs-lisp-mode . aggressive-indent-mode))
 #+END_SRC
 
 Paredit forces paired parentheses and provides commands to
 directly edit the Lisp abstract syntax tree.
 
 #+BEGIN_SRC elisp
-  (use-package paredit
-    :config (add-hook 'emacs-lisp-mode-hook #'paredit-mode)
-    (add-hook 'emacs-lisp-mode-hook (lambda () (electric-pair-local-mode -1))))
+    (use-package paredit
+      :hook ((emacs-lisp-mode . paredit-mode)
+             (emacs-lisp-mode . (lambda () (electric-pair-local-mode -1)))
+             ))
 #+END_SRC
 
 Highlight parens except when editing contents.
@@ -634,8 +635,7 @@ checking Bash scripts.
 #+BEGIN_SRC elisp
   (if (executable-find "shellcheck")
       (use-package flycheck
-        :ensure t
-        :config (add-hook 'sh-mode-hook 'flycheck-mode))
+        :hook ((sh-mode . flycheck-mode)))
     )
 #+END_SRC
 
@@ -1008,8 +1008,8 @@ Make a pretty arrow instead of ellipsis for expandable headlines.
 
 Use org-superstar for nice symbols (successor to org-bullets)
 #+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
-  (use-package org-superstar
-    :config (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+    (use-package org-superstar
+      :hook (org-mode-hook . (lambda () (org-superstar-mode 1))))
 #+end_src
 
 ** Key bindings
@@ -1043,20 +1043,19 @@ Org-present is a handy mode for simple presentations from an org outline
 
 #+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
   (use-package org-present
-    :config
-    (add-hook 'org-present-mode-hook
-              (lambda ()
-                (org-present-big)
-                (org-display-inline-images)
-                (org-present-hide-cursor)
-                (org-present-read-only)))
-    (add-hook 'org-present-mode-quit-hook
-              (lambda ()
-                (org-present-small)
-                (org-remove-inline-images)
-                (org-present-show-cursor)
-                (org-present-show-cursor)
-                (org-present-read-write))))
+    :hook
+    ((org-present-mode .
+                       (lambda ()
+                         (org-present-big)
+                         (org-display-inline-images)
+                         (org-present-hide-cursor)
+                         (org-present-read-only)))
+     (org-present-mode-quit .
+                            (lambda ()
+                              (org-present-small)
+                              (org-remove-inline-images)
+                              (org-present-show-cursor)
+                              (org-present-read-write)))))
 #+end_src
 
 
