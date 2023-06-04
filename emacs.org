@@ -1079,42 +1079,81 @@ https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
   (make-directory org-roam-directory t)
 
   (use-package org-roam
+    :demand t
     :bind (("C-c n l" . org-roam-buffer-toggle)
-            ("C-c n f" . org-roam-node-find)
-            ("C-c n i" . org-roam-node-insert)
-            :map org-roam-dailies-map
-            ("Y" . org-roam-dailies-capture-yesterday)
-            ("T" . org-roam-dailies-capture-tomorrow))
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           :map org-roam-dailies-map
+           ("Y" . org-roam-dailies-capture-yesterday)
+           ("T" . org-roam-dailies-capture-tomorrow))
     :bind-keymap
     ("C-c n d" . org-roam-dailies-map)
+    ;; :after citar ;; Reference citation template relies on Citar
     :config
     (org-roam-setup)
     (org-roam-db-autosync-mode)
     (require 'org-roam-dailies)
     (setq org-roam-capture-templates
-      '(("m" "main" plain
-         "%?"
-         :target (file+head "main/%<%Y%m%d%H%M%S>-${slug}.org"
-                            "#+title: ${title}\n")
-         :immediate-finish t
-         :unnarrowed t)
-        ("r" "reference" plain "%?"
-         :target
-         (file+head "reference/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n")
-         :immediate-finish t
-         :unnarrowed t)
-        ("a" "article" plain "%?"
-         :target
-         (file+head "articles/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :article:\n")
-         :immediate-finish t
-         :unnarrowed t)))
+          '(("m" "main" plain
+             "%?"
+             :target (file+head "main/%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n")
+             :immediate-finish t
+             :unnarrowed t)
+            ("r" "reference" plain "%?"
+             :target
+             (file+head "reference/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n")
+             :immediate-finish t
+             :unnarrowed t)
+            ("a" "article" plain "%?"
+             :target
+             (file+head "articles/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :article:\n")
+             :immediate-finish t
+             :unnarrowed t)))
+    (defun imrae/org-roam-node-from-cite (key)
+      (interactive (list (citar-select-ref)))
+      (let ((title (citar-format--entry "${author editor} :: ${title}"
+                                        key
+                                        )))
+        (org-roam-capture-
+         :keys "r"
+         :templates
+         '(("r" "reference" plain "%?" :if-new
+            (file+head "reference/${citekey}.org"
+                       ":PROPERTIES:
+  :ROAM_REFS: [cite:@${citekey}]
+  :END:
+  ,#+title: ${title}\n")
+            :immediate-finish t
+            :unnarrowed t))
+         :info (list :citekey key)
+         :node (org-roam-node-create :title title)
+         :props '(:finalize find-file))
+        ))
     )
 #+end_src
 
 #+RESULTS:
 
-* COMMENT Citation
 
+* Citation
+:PROPERTIES:
+:header-args: :tangle (if-workstation  "emacs/dot-emacs.d/init.el" "no")
+:END:
+
+** Basics
+#+begin_src elisp
+  (use-package citar
+    :config
+    (setq org-cite-insert-processor 'citar)
+    (setq org-cite-follow-processor 'citar)
+    (setq org-cite-activate-processor 'citar)
+    (setq citar-bibliography '("~/braindump/zotero_lib.bib"))
+    (require 'citar-format)
+    )
+#+end_src
+
+** COMMENT WIP
 Borrowing some bits from https://www.riccardopinosio.com/blog/posts/zotero_notes_article.html
 
 (All a bit broken at the moment, WIP...)
