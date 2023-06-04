@@ -1113,9 +1113,6 @@ https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
 
 #+RESULTS:
 
-The key commands are org-roam-node-insert, org-roam-node-find,
-org-roam-capture. I'll probably want to assign hotkeys to those.
-
 * COMMENT Citation
 
 Borrowing some bits from https://www.riccardopinosio.com/blog/posts/zotero_notes_article.html
