@@ -217,17 +217,16 @@ Launch dmenu or i3-dmenu-desktop with shortcuts
 
 ** Compositing
 Use picom (may not be available on all systems)
-- on scpc041 this is started by =/etc/xdg/autostart/picom.desktop= so
+- on scpc041 and Arctopus this is started by =/etc/xdg/autostart/picom.desktop= so
   redundant to also include in i3 config
 
-#+begin_src conf :tangle (if (equal system "Arctopus") "i3/dot-config/i3/config" "no")
+#+begin_src conf :tangle (if (equal system "NonExistent") "i3/dot-config/i3/config" "no")
 # Enable compositing (i.e. for transparent terminals)
 exec --no-startup-id picom --backend glx
-
 #+end_src
 
 Actual picom configuration lives in another file
-#+begin_src conf :tangle (if (member system '("Arctopus" "scpc041")) "i3/dot-config/picom.conf" "no")
+#+begin_src conf :tangle (if-workstation "i3/dot-config/picom.conf" "no")
   corner-radius = 10;
   rounded-corners-exclude = [
   "window_type = 'dock'",
@@ -940,7 +939,7 @@ since moving to 40%-size keyboards.
 Internet radio streaming with mplayer. Not useful for remote machines
 so only included for named ones.
 
-#+BEGIN_SRC bash :tangle (if (member system '("Arctopus" "scpc041")) "bash/dot-bashrc" "no")
+#+BEGIN_SRC bash :tangle (if-workstation "bash/dot-bashrc" "no")
   alias soma-dronezone='mplayer -playlist http://somafm.com/dronezone130.pls < /dev/null >&0 2>&0 &'
   alias soma-groovesalad='mplayer -playlist http://somafm.com/groovesalad130.pls < /dev/null >&0 2>&0 &'
   alias soma-defcon='mplayer -playlist http://somafm.com/defcon130.pls < /dev/null >&0 2>&0 &'
