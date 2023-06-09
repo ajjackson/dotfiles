@@ -928,17 +928,32 @@ I need to get the basics cleaned up first.
 
 #+begin_src elisp :noweb-ref org-agenda-setup
   (let ((todo-file (concat org-directory "/todo.org"))
-        (notes-file (concat org-directory "/notes.org")))
+        (notes-file (concat org-directory "/notes.org"))
+        (shopping-file (concat org-directory "/shopping.org")))
     (setq org-capture-templates
           `(
-            ("s" "todo list: reSearch" entry
-             (file+headline ,todo-file "RESEARCH") "** TODO %? %^g %i \n" :empty-lines 0)
-            ("t" "Todo list" entry
-             (file+headline ,todo-file "LIFE") "* TODO %? %^g %i \n")
-            ("o" "Office work" entry
-             (file+headline ,todo-file "OFFICE") "* TODO %? %^g %i \n" :empty-lines 0)
+            ;; Entries for work
+            ("w" "work")
+            ("ws" "todo list: reSearch" entry
+             (file+headline ,todo-file "RESEARCH") "** TODO %? %^g %i \n" :empty-lines 1)
+            ("wo" "Office work" entry
+             (file+headline ,todo-file "OFFICE") "* TODO %? %^g %i \n" :empty-lines 1)
+            ("wa" "Abins" entry
+             (file+headline ,(concat org-directory "/roam/projects/20230605111955-Abins.org") "To-do")
+             "** TODO %? %^G"
+             :empty-lines 1)
+
             ("n" "General notes" entry
-             (file ,notes-file) ""))))
+             (file ,notes-file) "")
+
+            ;; Entries for LIFE keyword
+            ("l" "life")
+            ("lt" "Todo list" entry
+             (file+headline ,todo-file "LIFE") "* TODO %? %^g %i \n")
+            ("ls" "Shopping list" entry
+             (file+headline ,shopping-file "Unfiled")
+             "** DECIDING %^{item}")
+            )))
 #+end_src
 
 Agenda views: lets me easily narrow focus to work or non-work and pick
@@ -1061,7 +1076,6 @@ Org-present is a handy mode for simple presentations from an org outline
                               (org-present-read-write)))))
 #+end_src
 
-
 ** Roam
 I'm still new to org-roam, best start with basics.
 
@@ -1073,85 +1087,93 @@ Dailies setup is taken from
 https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
 
 #+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
-  (setq org-roam-directory (concat org-directory "/roam"))
-  (make-directory org-roam-directory t)
+        (setq org-roam-directory (concat org-directory "/roam"))
+        (make-directory org-roam-directory t)
 
-  (use-package org-roam
-    :demand t
-    :bind (("C-c n l" . org-roam-buffer-toggle)
-           ("C-c n f" . org-roam-node-find)
-           ("C-c n i" . org-roam-node-insert)
-           :map org-roam-dailies-map
-           ("Y" . org-roam-dailies-capture-yesterday)
-           ("T" . org-roam-dailies-capture-tomorrow))
-    :bind-keymap
-    ("C-c n d" . org-roam-dailies-map)
-    ;; :after citar ;; Reference citation template relies on Citar
-    :config
-    (org-roam-setup)
-    (org-roam-db-autosync-mode)
-    (require 'org-roam-dailies)
-    (setq org-roam-capture-templates
-          '(("m" "main" plain
-             "%?"
-             :target (file+head "main/%<%Y%m%d%H%M%S>-${slug}.org"
-                                "#+title: ${title}\n")
-             :immediate-finish t
-             :unnarrowed t)
-            ("r" "reference" plain "%?"
-             :target
-             (file+head "reference/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n")
-             :immediate-finish t
-             :unnarrowed t)
-            ("a" "article" plain "%?"
-             :target
-             (file+head "articles/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :article:\n")
-             :immediate-finish t
-             :unnarrowed t)
-            ("p" "project" plain "%?"
-             :target
-             (file+head "projects/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :project:\n")
-             :immediate-finish t
-             :unnarrowed t)
-            ("n" "people" plain "%?"
-             :target
-             (file+head "people/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :people:\n")
-                 :immediate-finish t
-                 :unnarrowed t)
-            ))
-    (defun imrae/org-roam-node-from-cite (key)
-      (interactive (list (citar-select-ref)))
-      (let ((title (citar-format--entry "${author editor} :: ${title}"
-                                        key
-                                        )))
-        (org-roam-capture-
-         :keys "r"
-         :templates
-         '(("r" "reference" plain "%?" :if-new
-            (file+head "reference/${citekey}.org"
-                       ":PROPERTIES:
-  :ROAM_REFS: [cite:@${citekey}]
-  :END:
-  ,#+title: ${title}\n")
-            :immediate-finish t
-            :unnarrowed t))
-         :info (list :citekey key)
-         :node (org-roam-node-create :title title)
-         :props '(:finalize find-file))
-        ))
+        (use-package org-roam
+          :demand t
+          :bind (("C-c n l" . org-roam-buffer-toggle)
+                 ("C-c n f" . org-roam-node-find)
+                 ("C-c n i" . org-roam-node-insert)
+                 ("C-c n c" . org-roam-capture)
+                 :map org-roam-dailies-map
+                 ("Y" . org-roam-dailies-capture-yesterday)
+                 ("T" . org-roam-dailies-capture-tomorrow))
+          :bind-keymap
+          ("C-c n d" . org-roam-dailies-map)
+          ;; :after citar ;; Reference citation template relies on Citar
+          :config
+          (org-roam-setup)
+          (org-roam-db-autosync-mode)
+          (require 'org-roam-dailies)
+          (setq org-roam-capture-templates
+                '(("m" "main" plain
+                   "%?"
+                   :target (file+head "main/%<%Y%m%d%H%M%S>-${slug}.org"
+                                      "#+title: ${title}\n")
+                   :immediate-finish t
+                   :unnarrowed t)
+                  ("r" "reference" plain "%?"
+                   :target
+                   (file+head "reference/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n")
+                   :immediate-finish t
+                   :unnarrowed t)
+                  ("a" "article" plain "%?"
+                   :target
+                   (file+head "articles/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :article:\n")
+                   :immediate-finish t
+                   :unnarrowed t)
+                  ("p" "project" plain "%?"
+                   :target
+                   (file+head "projects/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :project:")
+                   :immediate-finish t
+                   :unnarrowed t)
+                  ("P" "project TODO" entry "** TODO %?"
+                   :target
+                   (file+head+olp
+                    "projects/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :project:"
+                    ("To-do"))
+                   :immediate-finish t
+                   :unnarrowed t)
+                  ("n" "people" plain "%?"
+                   :target
+                   (file+head "people/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :people:\n")
+                       :immediate-finish t
+                       :unnarrowed t)
+                  ))
+          (defun imrae/org-roam-node-from-cite (key)
+            (interactive (list (citar-select-ref)))
+            (let ((title (citar-format--entry "${author editor} :: ${title}"
+                                              key
+                                              )))
+              (org-roam-capture-
+               :keys "r"
+               :templates
+               '(("r" "reference" plain "%?" :if-new
+                  (file+head "reference/${citekey}.org"
+                             ":PROPERTIES:
+        :ROAM_REFS: [cite:@${citekey}]
+        :END:
+        ,#+title: ${title}\n")
+                  :immediate-finish t
+                  :unnarrowed t))
+               :info (list :citekey key)
+               :node (org-roam-node-create :title title)
+               :props '(:finalize find-file))
+              ))
 
-    (cl-defmethod org-roam-node-type ((node org-roam-node))
-      "Return the TYPE of NODE."
-      (condition-case nil
-          (file-name-nondirectory
-           (directory-file-name
-            (file-name-directory
-             (file-relative-name (org-roam-node-file node) org-roam-directory))))
-        (error "")))
+          (cl-defmethod org-roam-node-type ((node org-roam-node))
+            "Return the TYPE of NODE."
+            (condition-case nil
+                (file-name-nondirectory
+                 (directory-file-name
+                  (file-name-directory
+                   (file-relative-name (org-roam-node-file node) org-roam-directory))))
+              (error "")))
 
-    (setq org-roam-node-display-template
-          (concat "${type:15} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-    )
+          (setq org-roam-node-display-template
+                (concat "${type:15} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+          )
 #+end_src
 
 #+RESULTS:
