@@ -255,6 +255,16 @@ This is system-dependent, use xrandr commands to rotate and position monitors
   workspace 2 output DVI-D-0
 #+end_src
 
+#+begin_src conf :mkdirp yes :tangle (if (equal system "scpc041") "i3/dot-config/i3/config" "no")
+  # Sort out monitor positions
+  exec xrandr --output DP-1 --rotate left --left-of DP-2 --pos 0x0
+  exec xrandr --output DP-2 --pos 1080x520
+       
+  # They are in the wrong order so assign initial workspaces
+  workspace 1 output DP-2
+  workspace 2 output DP-1
+#+end_src
+
 ** Screen lock, suspend etc.
 
 #+NAME: get_wallpaper_args
