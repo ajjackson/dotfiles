@@ -308,7 +308,7 @@ https://faq.i3wm.org/question/239/how-do-i-suspendlockscreen-and-logout.1.html
 But instead of using an i3 mode, try using dmenu
 
 #+begin_src conf :noweb no-export
-  bindsym $mod+c exec echo -e "lock\nlogout\nsuspend\nhibernate\nreboot\nshutdown" | dmenu <<get_dmenu_args()>> "$@" | xargs i3exit
+  bindsym $mod+c exec echo -e "lock\nlogout\nsuspend\nhibernate\nreboot\nshutdown" | dmenu <<get_dmenu_args()>> "$@" | xargs ~/.local/bin/i3exit
 #+end_src
 
 
@@ -341,7 +341,7 @@ https://github.com/polybar/polybar. The [[https://github.com/polybar/polybar/wik
 
 #+NAME: get_polybar_colours
 #+BEGIN_SRC emacs-lisp :tangle no
-  (cond ((member system '("Arctopus"))
+  (cond ((member system '("Arctopus" "scpc041"))
          "[colors]
   background = #2D3540
   background-alt = #63738C
@@ -698,6 +698,15 @@ Conda block is machine-specific, used to set default conda environment:
 # !! Contents within this block are managed by 'conda init' !!
 if test -f /home/adam/.conda/envs/science/bin/conda
     eval /home/adam/.conda/envs/science/bin/conda "shell.fish" "hook" $argv | source
+end
+# <<< conda initialize <<<
+#+end_src
+
+#+begin_src fish :tangle (if (equal system "scpc041") "fish/dot-config/fish/config.fish" "no")
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+if test -f /home/adamjackson/mambaforge/bin/conda
+    eval /home/adamjackson/mambaforge/bin/conda "shell.fish" "hook" $argv | source
 end
 # <<< conda initialize <<<
 #+end_src
