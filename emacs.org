@@ -927,33 +927,35 @@ them. Hopefully notes.org will soon be replaced by org-roam stuff, but
 I need to get the basics cleaned up first.
 
 #+begin_src elisp :noweb-ref org-agenda-setup
-  (let ((todo-file (concat org-directory "/todo.org"))
-        (notes-file (concat org-directory "/notes.org"))
-        (shopping-file (concat org-directory "/shopping.org")))
-    (setq org-capture-templates
-          `(
-            ;; Entries for work
-            ("w" "work")
-            ("ws" "todo list: reSearch" entry
-             (file+headline ,todo-file "RESEARCH") "** TODO %? %^g %i \n" :empty-lines 1)
-            ("wo" "Office work" entry
-             (file+headline ,todo-file "OFFICE") "* TODO %? %^g %i \n" :empty-lines 1)
-            ("wa" "Abins" entry
-             (file+headline ,(concat org-directory "/roam/projects/20230605111955-Abins.org") "To-do")
-             "** TODO %? %^G"
-             :empty-lines 1)
+    (let ((todo-file (concat org-directory "/todo.org"))
+          (notes-file (concat org-directory "/notes.org"))
+          (shopping-file (concat org-directory "/shopping.org")))
+      (setq org-capture-templates
+            `(
+              ;; Entries for work
+              ("w" "work")
+              ("ws" "todo list: reSearch" entry
+               (file+headline ,todo-file "RESEARCH") "** TODO %? %^g %i \n" :empty-lines 1)
+              ("wo" "Office work" entry
+               (file+headline ,todo-file "OFFICE") "* TODO %? %^g %i \n" :empty-lines 1)
+              ("wa" "Abins" entry
+               (file+headline ,(concat org-directory "/roam/projects/20230605111955-Abins.org") "To-do")
+               "** TODO %? %^G"
+               :empty-lines 1)
 
-            ("n" "General notes" entry
-             (file ,notes-file) "")
+              ("m" "Meta: emacs, org, etc." entry
+               (file+headline ,todo-file "META") "* TODO %? %^g %i \n" :empty-lines 1)
+              ("n" "General notes" entry
+               (file ,notes-file) "")
 
-            ;; Entries for LIFE keyword
-            ("l" "life")
-            ("lt" "Todo list" entry
-             (file+headline ,todo-file "LIFE") "* TODO %? %^g %i \n")
-            ("ls" "Shopping list" entry
-             (file+headline ,shopping-file "Unfiled")
-             "** DECIDING %^{item}")
-            )))
+              ;; Entries for LIFE keyword
+              ("l" "life")
+              ("lt" "Todo list" entry
+               (file+headline ,todo-file "LIFE") "* TODO %? %^g %i \n")
+              ("ls" "Shopping list" entry
+               (file+headline ,shopping-file "Unfiled")
+               "** DECIDING %^{item}")
+              )))
 #+end_src
 
 Agenda views: lets me easily narrow focus to work or non-work and pick
