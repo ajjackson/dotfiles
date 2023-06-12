@@ -1087,93 +1087,73 @@ Dailies setup is taken from
 https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
 
 #+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
-        (setq org-roam-directory (concat org-directory "/roam"))
-        (make-directory org-roam-directory t)
+  (setq org-roam-directory (concat org-directory "/roam"))
+  (make-directory org-roam-directory t)
 
-        (use-package org-roam
-          :demand t
-          :bind (("C-c n l" . org-roam-buffer-toggle)
-                 ("C-c n f" . org-roam-node-find)
-                 ("C-c n i" . org-roam-node-insert)
-                 ("C-c n c" . org-roam-capture)
-                 :map org-roam-dailies-map
-                 ("Y" . org-roam-dailies-capture-yesterday)
-                 ("T" . org-roam-dailies-capture-tomorrow))
-          :bind-keymap
-          ("C-c n d" . org-roam-dailies-map)
-          ;; :after citar ;; Reference citation template relies on Citar
-          :config
-          (org-roam-setup)
-          (org-roam-db-autosync-mode)
-          (require 'org-roam-dailies)
-          (setq org-roam-capture-templates
-                '(("m" "main" plain
-                   "%?"
-                   :target (file+head "main/%<%Y%m%d%H%M%S>-${slug}.org"
-                                      "#+title: ${title}\n")
-                   :immediate-finish t
-                   :unnarrowed t)
-                  ("r" "reference" plain "%?"
-                   :target
-                   (file+head "reference/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n")
-                   :immediate-finish t
-                   :unnarrowed t)
-                  ("a" "article" plain "%?"
-                   :target
-                   (file+head "articles/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :article:\n")
-                   :immediate-finish t
-                   :unnarrowed t)
-                  ("p" "project" plain "%?"
-                   :target
-                   (file+head "projects/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :project:")
-                   :immediate-finish t
-                   :unnarrowed t)
-                  ("P" "project TODO" entry "** TODO %?"
-                   :target
-                   (file+head+olp
-                    "projects/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :project:"
-                    ("To-do"))
-                   :immediate-finish t
-                   :unnarrowed t)
-                  ("n" "people" plain "%?"
-                   :target
-                   (file+head "people/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :people:\n")
-                       :immediate-finish t
-                       :unnarrowed t)
-                  ))
-          (defun imrae/org-roam-node-from-cite (key)
-            (interactive (list (citar-select-ref)))
-            (let ((title (citar-format--entry "${author editor} :: ${title}"
-                                              key
-                                              )))
-              (org-roam-capture-
-               :keys "r"
-               :templates
-               '(("r" "reference" plain "%?" :if-new
-                  (file+head "reference/${citekey}.org"
-                             ":PROPERTIES:
-        :ROAM_REFS: [cite:@${citekey}]
-        :END:
-        ,#+title: ${title}\n")
-                  :immediate-finish t
-                  :unnarrowed t))
-               :info (list :citekey key)
-               :node (org-roam-node-create :title title)
-               :props '(:finalize find-file))
-              ))
+  (use-package org-roam
+    :demand t
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           ("C-c n c" . org-roam-capture)
+           :map org-roam-dailies-map
+           ("Y" . org-roam-dailies-capture-yesterday)
+           ("T" . org-roam-dailies-capture-tomorrow))
+    :bind-keymap
+    ("C-c n d" . org-roam-dailies-map)
+    ;; :after citar ;; Reference citation template relies on Citar
+    :config
+    (org-roam-setup)
+    (org-roam-db-autosync-mode)
+    (require 'org-roam-dailies)
+    (setq org-roam-capture-templates
+          '(("m" "main" plain
+             "%?"
+             :target (file+head "main/%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n")
+             :immediate-finish t
+             :unnarrowed t)
+            ("r" "reference" plain "%?"
+             :target
+             (file+head "reference/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n")
+             :immediate-finish t
+             :unnarrowed t)
+            ("a" "article" plain "%?"
+             :target
+             (file+head "articles/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :article:\n")
+             :immediate-finish t
+             :unnarrowed t)
+            ("p" "project" plain "%?"
+             :target
+             (file+head "projects/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :project:")
+             :immediate-finish t
+             :unnarrowed t)
+            ("P" "project TODO" entry "** TODO %?"
+             :target
+             (file+head+olp
+              "projects/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :project:"
+              ("To-do"))
+             :immediate-finish t
+             :unnarrowed t)
+            ("n" "people" plain "%?"
+             :target
+             (file+head "people/%<%Y%m%d%H%M%S>-${title}.org" "#+title: ${title}\n#+filetags: :people:\n")
+             :immediate-finish t
+             :unnarrowed t)
+            ))
 
-          (cl-defmethod org-roam-node-type ((node org-roam-node))
-            "Return the TYPE of NODE."
-            (condition-case nil
-                (file-name-nondirectory
-                 (directory-file-name
-                  (file-name-directory
-                   (file-relative-name (org-roam-node-file node) org-roam-directory))))
-              (error "")))
+    (cl-defmethod org-roam-node-type ((node org-roam-node))
+      "Return the TYPE of NODE."
+      (condition-case nil
+          (file-name-nondirectory
+           (directory-file-name
+            (file-name-directory
+             (file-relative-name (org-roam-node-file node) org-roam-directory))))
+        (error "")))
 
-          (setq org-roam-node-display-template
-                (concat "${type:15} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-          )
+    (setq org-roam-node-display-template
+          (concat "${type:15} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+    )
 #+end_src
 
 #+RESULTS:
@@ -1185,6 +1165,8 @@ https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
 :END:
 
 ** Basics
+Use citar to insert citations from system-wide bibtex file
+
 #+begin_src elisp
   (use-package citar
     :config
@@ -1196,12 +1178,67 @@ https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
     )
 #+end_src
 
+** Zotero links
+Set up zotero links to open in browser. Confusingly and annoyingly, I
+then have to go to Firefox, click the address bar and hit enter. That
+isn't necessary for other link types?
+
+#+begin_src elisp
+  (org-link-set-parameters "zotero" :follow
+                       (lambda (zpath)
+                         (browse-url
+                          (format "zotero:%s" zpath))))
+#+end_src
+
+Now we can create a function that makes an org-roam node and links it
+to Zotero with a select link:
+
+#+begin_src elisp
+    (defun imrae/org-roam-node-from-cite (key)
+      (interactive (list (citar-select-ref)))
+      (let ((title (citar-format--entry "${author editor} :: ${title}"
+                                        key
+                                        ))
+            (zoteroselect (citar-format--entry "[[${zoteroselect}]]" key)))
+        (message zoteroselect)
+        (org-roam-capture-
+         :keys "r"
+         :templates
+         `(("r" "reference" plain "%?" :if-new
+            (file+head "reference/${citekey}.org\n"
+                       ,(concat
+                         "    :PROPERTIES:\n"
+                         "    :ROAM_REFS: " zoteroselect "\n"
+                         "    :END:\n"
+                         "    #+title: ${title}\n"))
+            :immediate-finish t
+            :unnarrowed t))
+         :info (list :citekey key)
+         :node (org-roam-node-create :title title)
+         :props '(:finalize find-file))
+        ))
+#+end_src
+
+This relies on a "zoteroselect" key being present. I should really
+code in some fallback logic in case there isn't...
+
+Anyway, to get that key we have to use the "better bibtex" Zotero
+plugin to export our library, and add this code to the "postscript"
+
+#+begin_example
+if (Translator.BetterBibTeX) {
+tex.add({ name: 'zoteroselect', value: zotero.uri.replace(/http:\/\/zotero.org\/users\/\d+\/items\/(\w+)/, 'zotero://select/library/items/$1')});
+}
+#+end_example
+
 ** COMMENT WIP
 Borrowing some bits from https://www.riccardopinosio.com/blog/posts/zotero_notes_article.html
 
 (All a bit broken at the moment, WIP...)
 
 #+begin_src elisp
+  (citar-org-roam-note-title-template)
+
     (org-link-set-parameters "zotero" :follow
                                (lambda (zpath)
                                  (browse-url
