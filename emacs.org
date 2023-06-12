@@ -1199,7 +1199,7 @@ to Zotero with a select link:
       (let ((title (citar-format--entry "${author editor} :: ${title}"
                                         key
                                         ))
-            (zoteroselect (citar-format--entry "[[${zoteroselect}]]" key)))
+            (zoteroselect (citar-format--entry "[[${zoteroselect}][@${=key=}]]" key)))
         (message zoteroselect)
         (org-roam-capture-
          :keys "r"
