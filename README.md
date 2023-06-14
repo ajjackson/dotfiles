@@ -29,7 +29,7 @@ Things to try differently
     - then call `stow -t /suitable/root/position [packages]` to copy them
     - `--dotfiles` argument automatically converts "dot-config" to ".config" etc for a nicer tree
 
-- Use Elpaca instead of use-package
+- Use Elpaca instead of package.el
   - soooooo much faster
   - install unavailable packages by default, if it shouldn't be on
     this machine then don't configure it (see conditional tangling,
