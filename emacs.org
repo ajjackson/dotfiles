@@ -1185,11 +1185,17 @@ Set up zotero links to open in browser. Confusingly and annoyingly, I
 then have to go to Firefox, click the address bar and hit enter. That
 isn't necessary for other link types?
 
+On linux you may also need to run =xdg-mime default zotero.desktop x-scheme-handler/zotero=
+
 #+begin_src elisp
-  (org-link-set-parameters "zotero" :follow
-                       (lambda (zpath)
-                         (browse-url
-                          (format "zotero:%s" zpath))))
+      (add-hook 'elpaca-after-init-hook
+                (lambda ()
+        (org-link-set-parameters "zotero" :follow
+                             (lambda (zpath)
+                               (browse-url
+                                (format "zotero:%s" zpath))))
+                  )
+                )
 #+end_src
 
 Now we can create a function that makes an org-roam node and links it
