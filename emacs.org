@@ -268,7 +268,7 @@ a block of text; I find this less disorientating.
 
 ** Workstations
   :PROPERTIES:
-  :header-args: :tangle (if-workstation "emacs/dot-emacs.d/init.el" no)
+  :header-args: :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
   :END:
 Workstations get a bit more bling than servers.
 
@@ -451,7 +451,7 @@ All-the-icons adds pretty pictures to everything.
 
 ** Workstation bling
   :PROPERTIES:
-  :header-args: :tangle (if-workstation "emacs/dot-emacs.d/init.el" no)
+  :header-args: :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
   :END:
 
 #+BEGIN_SRC elisp
