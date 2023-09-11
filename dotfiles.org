@@ -16,6 +16,8 @@ probabably needs to authorise this with 'y'.
                 ((member hostname '("ajj-mbp-1" "ajj-mbp-1.local"
                                     "dock-ajj-mbp-1" "dock-ajj-mbp-1.esc.rl.ac.uk"))
                  "ajj-mbp-1")
+                ((string= (substring (system-name) -16) "nubes.stfc.ac.uk") "SCD-cloud")
+                ((string-match "host-[[:digit:]]+-[[:digit:]]+-[[:digit:]]+-[[:digit:]]+" (system-name)) "SCD-cloud")
                 ('t hostname))
           ))
 
@@ -721,6 +723,18 @@ end
 # <<< conda initialize <<<
 #+end_src
 
+On SCD-cloud images we also need to add ~/.local/bin: do this before
+mamba stuff so environments take priority.
+#+begin_src fish :tangle (if (equal system "SCD-cloud") "fish/dot-config/fish/config.fish" "no")
+set -xp PATH $HOME/.local/bin
+
+# >>> mamba initialize >>>
+# !! Contents within this block are managed by 'mamba init' !!
+set -gx MAMBA_EXE "/home/prg49555/bin/micromamba"
+set -gx MAMBA_ROOT_PREFIX "/home/prg49555/micromamba"
+$MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
+# <<< mamba initialize <<<
+#+end_src
 
 *** Functions
 For convenience, the "n" function for use with /nnn/ file manager is
