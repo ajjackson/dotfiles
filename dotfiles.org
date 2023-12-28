@@ -35,7 +35,7 @@ probabably needs to authorise this with 'y'.
 
 * i3
   :PROPERTIES:
-  :header-args: :tangle "i3/dot-config/i3/config"
+  :header-args: :tangle "i3/.config/i3/config"
   :END:
 
 i3 configuration mostly lives in one file.
@@ -220,13 +220,13 @@ Use picom (may not be available on all systems)
 - on scpc041 and Arctopus this is started by =/etc/xdg/autostart/picom.desktop= so
   redundant to also include in i3 config
 
-#+begin_src conf :tangle (if (equal system "NonExistent") "i3/dot-config/i3/config" "no")
+#+begin_src conf :tangle (if (equal system "NonExistent") "i3/.config/i3/config" "no")
 # Enable compositing (i.e. for transparent terminals)
 exec --no-startup-id picom --backend glx
 #+end_src
 
 Actual picom configuration lives in another file
-#+begin_src conf :tangle (if-workstation "i3/dot-config/picom.conf" "no")
+#+begin_src conf :tangle (if-workstation "i3/.config/picom.conf" "no")
   corner-radius = 10;
   rounded-corners-exclude = [
   "window_type = 'dock'",
@@ -245,7 +245,7 @@ Actual picom configuration lives in another file
 
 This is system-dependent, use xrandr commands to rotate and position monitors
 
-#+begin_src conf :mkdirp yes :tangle (if (equal system "Arctopus") "i3/dot-config/i3/config" "no")
+#+begin_src conf :mkdirp yes :tangle (if (equal system "Arctopus") "i3/.config/i3/config" "no")
   # Sort out monitor positions
   exec xrandr --output DVI-D-0 --rotate left --right-of HDMI-0 --pos 1980x0
   exec xrandr --output HDMI-0 --pos 0x550
@@ -255,7 +255,7 @@ This is system-dependent, use xrandr commands to rotate and position monitors
   workspace 2 output DVI-D-0
 #+end_src
 
-#+begin_src conf :mkdirp yes :tangle (if (equal system "scpc041") "i3/dot-config/i3/config" "no")
+#+begin_src conf :mkdirp yes :tangle (if (equal system "scpc041") "i3/.config/i3/config" "no")
   # Sort out monitor positions
   exec xrandr --output DP-1 --rotate left --left-of DP-2 --pos 0x0
   exec xrandr --output DP-2 --pos 1080x520
@@ -339,7 +339,7 @@ Include polybar configuration with i3 configuration as I use them
 together.  (To learn more about how to configure Polybar go to
 https://github.com/polybar/polybar. The [[https://github.com/polybar/polybar/wiki/][wiki]] page is quite helpful.)
 
-#+begin_src sh :tangle "i3/dot-config/polybar/launch.sh" :shebang "#! /usr/bin/env bash" :mkdirp yes
+#+begin_src sh :tangle "i3/.config/polybar/launch.sh" :shebang "#! /usr/bin/env bash" :mkdirp yes
     for m in $(xrandr --listactivemonitors | tail -n +2 | grep -o '[^ ]*$')
     do
         MONITOR=$m polybar --reload bottom &
@@ -365,7 +365,7 @@ https://github.com/polybar/polybar. The [[https://github.com/polybar/polybar/wik
 
 #+END_SRC
 
-#+begin_src conf :tangle "i3/dot-config/polybar/config.ini" :noweb no-export
+#+begin_src conf :tangle "i3/.config/polybar/config.ini" :noweb no-export
   <<get_polybar_colours()>>
 
   [bar/bottom]
@@ -610,7 +610,7 @@ https://github.com/polybar/polybar. The [[https://github.com/polybar/polybar/wik
 
 * Alacritty
   :PROPERTIES:
-  :header-args: :tangle "alacritty/dot-config/alacritty/alacritty.yml" :mkdirp yes
+  :header-args: :tangle "alacritty/.config/alacritty/alacritty.yml" :mkdirp yes
   :END:
 
 Configuration for Alacritty GPU-enhanced terminal emulator. I mostly
@@ -634,7 +634,7 @@ window:
 #+end_src
 
 Colour theme for Arctopus matching Hob wallpaper:
-#+begin_src yaml :tangle (if (equal system "Arctopus") "alacritty/dot-config/alacritty/alacritty.yml" "no")
+#+begin_src yaml :tangle (if (equal system "Arctopus") "alacritty/.config/alacritty/alacritty.yml" "no")
 # Colors (Hob)
 colors:
   primary:
@@ -668,7 +668,7 @@ colors:
 
 ** Fish
    :PROPERTIES:
-   :header-args: :tangle "fish/dot-config/fish/config.fish" :mkdirp yes
+   :header-args: :tangle "fish/.config/fish/config.fish" :mkdirp yes
    :END:
 
 #+begin_src fish
@@ -697,13 +697,13 @@ won't be there. I had this configured as a "universal variable" in
 =~/.config/fish/fish_variables= but that led to some confusing
 incorrect ordering.
 
-#+begin_src fish :tangle (if (equal system "Arctopus") "fish/dot-config/fish/config.fish" "no")
+#+begin_src fish :tangle (if (equal system "Arctopus") "fish/.config/fish/config.fish" "no")
 set -xp PATH /usr/bin
 #+end_src
 
 *** Arctopus: conda setup
 Conda block is machine-specific, used to set default conda environment:
-#+begin_src fish :tangle (if (equal system "Arctopus") "fish/dot-config/fish/config.fish" "no")
+#+begin_src fish :tangle (if (equal system "Arctopus") "fish/.config/fish/config.fish" "no")
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 if test -f /home/adam/.conda/envs/science/bin/conda
@@ -712,7 +712,7 @@ end
 # <<< conda initialize <<<
 #+end_src
 
-#+begin_src fish :tangle (if (equal system "scpc041") "fish/dot-config/fish/config.fish" "no")
+#+begin_src fish :tangle (if (equal system "scpc041") "fish/.config/fish/config.fish" "no")
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 if test -f /home/adamjackson/mambaforge/bin/conda
@@ -986,7 +986,7 @@ PDF manpages: first we need to find an appropriate PDF viewer
 #+END_SRC
 
 nnn quitcd magic: [[https://github.com/jarun/nnn/blob/master/misc/quitcd/quitcd.bash_sh_zsh][Original source]] has useful comments. BSD 2-clause
-license, see header of the [[./fish/dot-config/fish/functions/n.fish][fish]] version.
+license, see header of the [[./fish/.config/fish/functions/n.fish][fish]] version.
 
 #+begin_src bash
   n ()
@@ -1073,7 +1073,7 @@ Bash completion doesn't load automatically on a Mac if installed with Homebrew.
 
 * Tmux
    :PROPERTIES:
-   :header-args: :tangle "tmux/dot-config/tmux/tmux.conf" :mkdirp yes
+   :header-args: :tangle "tmux/.config/tmux/tmux.conf" :mkdirp yes
    :END:
 
 I'm not using tmux so much on the desktop with i3 but it still has its
@@ -1161,7 +1161,7 @@ First we unbind some keys we're going to need
 Some of the clipboard configuration is different for Mac vs
 Linux. On Mac we need to install "reattach-to-user-namespace"
 
-#+BEGIN_SRC conf :tangle (if (equal system-type 'darwin) "tmux/dot-config/tmux/tmux.conf" "")
+#+BEGIN_SRC conf :tangle (if (equal system-type 'darwin) "tmux/.config/tmux/tmux.conf" "")
     # http://iancmacdonald.com/macos/emacs/tmux/2017/01/15/macOS-tmux-emacs-copy-past.html
     set-option -g default-command "reattach-to-user-namespace -l bash"
     bind-key -T copy-mode 'C-w' send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
@@ -1171,7 +1171,7 @@ Linux. On Mac we need to install "reattach-to-user-namespace"
 #+END_SRC
 
 whereas on Linux we use xclip.
-#+BEGIN_SRC conf :tangle (if (equal system-type 'gnu/linux) "tmux/dot-config/tmux/tmux.conf" "")
+#+BEGIN_SRC conf :tangle (if (equal system-type 'gnu/linux) "tmux/.config/tmux/tmux.conf" "")
   bind-key -T copy-mode 'C-w' send-keys -X copy-pipe-and-cancel "xclip -sel clip -i"
   bind-key -T copy-mode 'M-w' send-keys -X copy-pipe-and-cancel "xclip -sel clip -i"
   bind-key -T copy-mode Enter send-keys -X copy-pipe-and-cancel "xclip -sel clip -i"
@@ -1245,7 +1245,7 @@ they wish to use and sets an ~NNN_PLUG~ environment variable that
 assigns shortcuts. We can also include simple commands directly, such
 as the git command to upload Mantid test data.
 
-#+begin_src fish :tangle fish/dot-config/fish/config.fish
+#+begin_src fish :tangle fish/.config/fish/config.fish
   set -x NNN_PLUG 'u:!git add-test-data "$nnn"'
 
   if test -f "$HOME/.config/nnn/plugins/nuke"
@@ -1493,7 +1493,7 @@ interpreter is not horribly painful to use:
 (This is [[https://github.com/wasamasa/breadline/blob/master/examples/.csirc][directly from]] the GPL-licensed project archive. Hopefully
 they are cool with that.)
 
-#+begin_src scheme :tangle chicken/dot-config/chicken/csirc :mkdirp yes
+#+begin_src scheme :tangle chicken/.config/chicken/csirc :mkdirp yes
   (import (chicken load))
   (load-verbose #f)
   (let ()
