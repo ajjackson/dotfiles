@@ -90,15 +90,13 @@ WIP: container can be used to test how this works in a clean environment
 Currently, build with
 
 ```
-    podman build --tag dotfiles --file micromamba --format Docker -v $PWD/..:/etc/dotfiles:ro
+    podman build --tag dotfiles --file containers/micromamba --format Docker .
 ```
 
 and run with
 
 ```
-    podman run -it --rm dotfiles bash
+    podman run -it --rm dotfiles
 ```
-
-(Might change once entrypoint is sorted...)
 
 Note that I am using a slightly old Ubuntu base for compatibility with conda-forge emacs build.
