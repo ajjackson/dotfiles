@@ -768,12 +768,12 @@ set -xp PATH $HOME/.local/bin
 ** Bash
 I still get a bit confused about bashrc vs bash_profile...
 
-Yes, bash_profile is for login sessions and bashrc is for
-non-login shells running scripts etc.  It's generally
-recommended that PATH stuff happens in bash_profile and
-aliases/functions happen in bashrc. But why? I don't generally use
-aliases in scripts, and my scripts might need access to manipulated
-paths.
+Yes, bash_profile is for login sessions and bashrc is for non-login
+shells running scripts etc.  It's generally recommended that PATH
+stuff happens in bash_profile and aliases/functions happen in
+bashrc. This is due to the way they are inherited: we don't want
+~export PATH=blah:$PATH~ to be extended in every subshell, and
+aliases/functions do not automatically get passed into subshells.
 
 (Presumably this is why it is important to EXPORT any path
 manipulation; this allows it to get into any non-login subshells you
@@ -849,6 +849,7 @@ export relevant variables.
 #+begin_src fish
   MY_CHICKEN_REPOSITORY=$HOME/opt/eggs/lib/chicken/5
   if test -d $MY_CHICKEN_REPOSITORY
+  then
     export CHICKEN_INSTALL_REPOSITORY=$MY_CHICKEN_REPOSITORY
     export CHICKEN_REPOSITORY_PATH=$MY_CHICKEN_REPOSITORY
   fi
