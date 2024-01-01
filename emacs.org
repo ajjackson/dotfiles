@@ -72,12 +72,47 @@ We also need to disable package.el in the "early-init" file
 Install use-package support and block the queue to ensure it is available in subsequent setup.
 
 #+begin_src elisp
+  (elpaca use-package)
+  (elpaca-wait)
+
+  ;; from use-package docs
+  (eval-when-compile
+   (require 'use-package))
+  ;; (require 'diminish)                ;; if you use :diminish
+  ;; (require 'bind-key)                ;; if you use any :bind variant
+
   (elpaca elpaca-use-package
           (elpaca-use-package-mode)
           (setq elpaca-use-package-by-default t))
-  (elpaca use-package-chords (require 'use-package-chords))
+
+  (elpaca '(key-chord :host github :repo "ajjackson/key-chord" :branch "0.6-versioned"))
+  ;; (elpaca '(bind-chord :host github :repo "jwiegley/use-package" :files ("bind-chord.el")))
 
   (elpaca-wait)
+  (use-package use-package
+    :elpaca nil
+    :custom
+    (use-package-verbose nil)
+    (use-package-compute-statistics nil)
+    (use-package-always-defer t)
+    (use-package-expand-minimally t)
+    (use-package-enable-imenu-support t))
+
+  (use-package use-package-chords
+    :demand t
+    :config
+    (key-chord-mode 1))
+  (elpaca-wait))
+
+  ;; (elpaca-merge-all)  ;; might fix issues with chord package version?
+
+  ;; (use-package use-package-chords
+  ;;   :demand t
+  ;;   :config
+  ;;   (key-chord-mode 1))
+  ;; (elpaca-wait)
+  ;(elpaca use-package-chords (require 'use-package-chords))
+
 #+end_src
 
 (use-package ships with bind-key, which is actually a pretty neat tool
