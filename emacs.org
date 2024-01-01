@@ -75,12 +75,6 @@ Install use-package support and block the queue to ensure it is available in sub
   (elpaca use-package)
   (elpaca-wait)
 
-  ;; from use-package docs
-  (eval-when-compile
-   (require 'use-package))
-  ;; (require 'diminish)                ;; if you use :diminish
-  ;; (require 'bind-key)                ;; if you use any :bind variant
-
   (elpaca elpaca-use-package
           (elpaca-use-package-mode)
           (setq elpaca-use-package-by-default t))
@@ -102,16 +96,7 @@ Install use-package support and block the queue to ensure it is available in sub
     :demand t
     :config
     (key-chord-mode 1))
-  (elpaca-wait))
-
-  ;; (elpaca-merge-all)  ;; might fix issues with chord package version?
-
-  ;; (use-package use-package-chords
-  ;;   :demand t
-  ;;   :config
-  ;;   (key-chord-mode 1))
-  ;; (elpaca-wait)
-  ;(elpaca use-package-chords (require 'use-package-chords))
+  (elpaca-wait)
 
 #+end_src
 
