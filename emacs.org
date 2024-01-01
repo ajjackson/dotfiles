@@ -69,7 +69,15 @@ We also need to disable package.el in the "early-init" file
   (setq package-enable-at-startup nil)
 #+end_src
 
-Install use-package support and block the queue to ensure it is available in subsequent setup.
+Install use-package support and block the queue to ensure it is
+available in subsequent setup.
+
+The dependency management for elpaca-use-package seems to be broken
+for MELPA version as key-chord version is not set correctly. To work
+around this I made a fork of key-chord which sets the Version metadata
+properly. I suppose when the other config bugs are sorted out here it
+may be worth opening a PR to fix it, but I'm not sure if there is anyone at
+"emacsorphanage" to accept bug fixes?
 
 #+begin_src elisp
   (elpaca use-package)
@@ -80,7 +88,6 @@ Install use-package support and block the queue to ensure it is available in sub
           (setq elpaca-use-package-by-default t))
 
   (elpaca '(key-chord :host github :repo "ajjackson/key-chord" :branch "0.6-versioned"))
-  ;; (elpaca '(bind-chord :host github :repo "jwiegley/use-package" :files ("bind-chord.el")))
 
   (elpaca-wait)
   (use-package use-package
@@ -549,9 +556,15 @@ but a better solution would be to figure out a way to elpaca it...
 
 ** Git
 I use Magit for 90% of Git stuff, and CLI for some troubleshooting.
+MELPA version has some dependency problems (needs a very new Emacs
+maybe?) so pin a stable version from source.
     #+BEGIN_SRC elisp
-      (use-package magit
-       :chords (("dg" . magit-status)))
+            (use-package transient
+              :elpaca (:host github :repo "magit/transient" :tag"v0.4.3"))
+
+            (use-package magit
+              :elpaca (:host github :repo "magit/magit" :tag "v3.3.0")
+              :chords (("dg" . magit-status)))
     #+END_SRC
 
 We can highlight changes in the "gutters" with a few more packages.
