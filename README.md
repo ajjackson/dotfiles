@@ -81,3 +81,22 @@ Instructions
       > install IO::Scalar
       ```
     Then `make test` should work.
+
+Containers
+==========
+
+WIP: container can be used to test how this works in a clean environment
+
+Currently, build with
+
+```
+    podman build --tag dotfiles --file containers/micromamba --format Docker .
+```
+
+and run with
+
+```
+    podman run -it --rm dotfiles
+```
+
+Note that I am using a slightly old Ubuntu base for compatibility with conda-forge emacs build.

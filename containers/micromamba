@@ -1,0 +1,26 @@
+FROM mambaorg/micromamba:1.5.1-focal
+COPY --chown=$MAMBA_USER:$MAMBA_USER containers/env.yaml /tmp/env.yaml
+COPY containers/micromamba-apt-packages.txt /tmp/apt-packages.txt
+
+USER root
+RUN apt-get update
+RUN xargs apt-get install -y < /tmp/apt-packages.txt
+
+RUN echo "useradd --create-home $MAMBA_USER"
+RUN mkhomedir_helper $MAMBA_USER
+
+USER $MAMBA_USER
+WORKDIR /home/$MAMBA_USER
+
+RUN micromamba install -y -n base -f /tmp/env.yaml && \
+    micromamba clean --all --yes
+
+RUN bash -c 'eval "$(micromamba shell hook --shell bash)"; micromamba activate base; condax install "emacs<29" '
+
+COPY --chown=$MAMBA_USER:$MAMBA_USER containers/entrypoint.sh /tmp/entrypoint.sh
+RUN chmod +x /tmp/entrypoint.sh
+
+RUN mkdir -p /home/$MAMBA_USER/src/dotfiles
+COPY --chown=$MAMBA_USER:$MAMBA_USER make.el dotfiles.org emacs.org /home/$MAMBA_USER/src/dotfiles/
+
+ENTRYPOINT ["/tmp/entrypoint.sh"]
