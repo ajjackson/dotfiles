@@ -768,11 +768,27 @@ set -xp PATH $HOME/.local/bin
 ** Bash
 I still get a bit confused about bashrc vs bash_profile...
 
+Some helpful stuff here
+https://unix.stackexchange.com/questions/170493/login-non-login-and-interactive-non-interactive-shells
+
+- bash_profile is loaded for login shells
+  - i.e. a shell you would need to enter a username/password for
+
+- =~/.bashrc= is loaded for non-login interactive shells
+  - Easiest way to get one of these is open graphical terminal from desktop GUI
+  - Of course we also usually source =~/.bashrc= from =~/.bash_profile=
+
+- Interactive shells have a prompt ($PS1) and source =/etc/profile=, =~/.profile=
+
+- Non-interactive shells for scripts etc will generally also be non-login.
+  - source =/etc/bashrc=
+  - also receives *exported* variables from the parent shell
+
 Yes, bash_profile is for login sessions and bashrc is for non-login
-shells running scripts etc.  It's generally recommended that PATH
-stuff happens in bash_profile and aliases/functions happen in
-bashrc. This is due to the way they are inherited: we don't want
-~export PATH=blah:$PATH~ to be extended in every subshell, and
+but "interactive" shells.  It's generally recommended that PATH stuff
+happens in bash_profile and aliases/functions happen in bashrc. This
+is due to the way they are inherited: we don't want ~export
+PATH=blah:$PATH~ to be extended in every subshell, and
 aliases/functions do not automatically get passed into subshells.
 
 (Presumably this is why it is important to EXPORT any path
