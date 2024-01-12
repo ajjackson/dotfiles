@@ -10,7 +10,7 @@ functions/macros created by calling the relevant block in
 
 * Packaging setup
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
 Package.el is really slow and MELPA only tracks the latest git
@@ -65,7 +65,7 @@ This is the boilerplate to install elpaca if unavailable and configure it:
 
 #+RESULTS:
 We also need to disable package.el in the "early-init" file
-#+begin_src elisp :tangle emacs/dot-emacs.d/early-init.el
+#+begin_src elisp :tangle emacs/.emacs.d/early-init.el
   (setq package-enable-at-startup nil)
 #+end_src
 
@@ -114,7 +114,7 @@ keybindings to certain modes. [[https://github.com/jwiegley/use-package/blob/mas
 
 * Paths, environment
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
 Set up another directory =~/.emacs.d/lisp= which can be used for
@@ -126,7 +126,7 @@ packages that aren't managed with elpaca. (i.e. experiments or simple personal p
 
 * Appearance
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
 ** Native tweaks
@@ -294,7 +294,7 @@ a block of text; I find this less disorientating.
 
 ** Workstations
   :PROPERTIES:
-  :header-args: :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+  :header-args: :tangle (if-workstation "emacs/.emacs.d/init.el" "no")
   :END:
 Workstations get a bit more bling than servers.
 
@@ -340,7 +340,7 @@ I don't seen an diminish uses in my config files so far, though, so drop it for 
 
 * Navigation, buffers and files
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
 ** Bookmarks
@@ -372,7 +372,7 @@ for the buffer menu.
 
 * Aliases
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
    Quick version of commands that are often accessed with M-x but not worth giving their own binding.
@@ -386,7 +386,7 @@ for the buffer menu.
 
 * Rebind common commands
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
    C-h should be used for deleting things. The most logical binding
@@ -428,7 +428,7 @@ for the buffer menu.
 
 * Backups
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
    Backup files are ugly but occasionally useful. Keep them out of sight.
@@ -442,7 +442,7 @@ for the buffer menu.
 
 * Completion (menus)
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
 Currently I favour ivy for completion.
@@ -477,7 +477,7 @@ All-the-icons adds pretty pictures to everything.
 
 ** Workstation bling
   :PROPERTIES:
-  :header-args: :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+  :header-args: :tangle (if-workstation "emacs/.emacs.d/init.el" "no")
   :END:
 
 #+BEGIN_SRC elisp
@@ -524,7 +524,7 @@ To use the counsel enhancements to projectile,
 
 * Completion (content)
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
 Electric pair mode is fine, I want this for pretty much everything
@@ -551,7 +551,7 @@ but a better solution would be to figure out a way to elpaca it...
 
 * Programming languages and syntax highlighting
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
 ** Git
@@ -769,7 +769,7 @@ extension, but I don't have a package for that.)
 
 The code lives in =~/.emacs.d/lisp=
 
-#+begin_src elisp :tangle "emacs/dot-emacs.d/lisp/gibbs2.el" :mkdirp yes
+#+begin_src elisp :tangle "emacs/.emacs.d/lisp/gibbs2.el" :mkdirp yes
   ;;;;; Custom colouring for GIBBS2 files (from guide at http://ergoemacs.org/emacs/elisp_syntax_coloring.html)
 
   ;; define keyword classes
@@ -822,7 +822,7 @@ The code lives in =~/.emacs.d/lisp=
 
 * Pretty symbols
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
 prettify-symbols does some cute replacement of character
@@ -849,7 +849,7 @@ really. For now we put some config here but activate manually with
 
 * Remote servers
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
    TRAMP is pretty great. I only use it with SSH, really, so default
@@ -860,7 +860,7 @@ really. For now we put some config here but activate manually with
 
 * Backups
   :PROPERTIES:
-  :header-args: :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
 Backup files are ugly but occasionally useful. Keep them out of sight.
@@ -877,7 +877,7 @@ Backup files are ugly but occasionally useful. Keep them out of sight.
 Org config is big, so we use noweb to manage the sections and pull
 them together.
 
-#+begin_src elisp :tangle "emacs/dot-emacs.d/init.el" :mkdirp yes :noweb no-export
+#+begin_src elisp :tangle "emacs/.emacs.d/init.el" :mkdirp yes :noweb no-export
   (setq org-directory "~/org")
 
   (use-package org
@@ -1050,13 +1050,13 @@ Use Python3 because it isn't 2015 any more
 ** Appearance
 Make a pretty arrow instead of ellipsis for expandable headlines.
 
-#+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+#+begin_src elisp :tangle (if-workstation "emacs/.emacs.d/init.el" "no")
   (setq org-ellipsis " ⤵")
   (add-hook 'org-mode-hook (lambda () (set-face-underline 'org-ellipsis nil)))
 #+end_src
 
 Use org-superstar for nice symbols (successor to org-bullets)
-#+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+#+begin_src elisp :tangle (if-workstation "emacs/.emacs.d/init.el" "no")
   (use-package org-superstar
        :after org
        :hook (org-mode . (lambda () (org-superstar-mode 1)))
@@ -1093,7 +1093,7 @@ outside of these files...)
 ** org-present
 Org-present is a handy mode for simple presentations from an org outline
 
-#+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+#+begin_src elisp :tangle (if-workstation "emacs/.emacs.d/init.el" "no")
   (use-package org-present
     :hook
     ((org-present-mode .
@@ -1120,7 +1120,7 @@ https://jethrokuan.github.io/org-roam-guide/
 Dailies setup is taken from
 https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
 
-#+begin_src elisp :tangle (if-workstation "emacs/dot-emacs.d/init.el" "no")
+#+begin_src elisp :tangle (if-workstation "emacs/.emacs.d/init.el" "no")
   (setq org-roam-directory (concat org-directory "/roam"))
   (make-directory org-roam-directory t)
 
@@ -1195,7 +1195,7 @@ https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
 
 * Citation
 :PROPERTIES:
-:header-args: :tangle (if-workstation  "emacs/dot-emacs.d/init.el" "no")
+:header-args: :tangle (if-workstation  "emacs/.emacs.d/init.el" "no")
 :END:
 
 ** Basics
