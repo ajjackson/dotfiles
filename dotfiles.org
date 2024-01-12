@@ -16,7 +16,8 @@ probabably needs to authorise this with 'y'.
                 ((member hostname '("ajj-mbp-1" "ajj-mbp-1.local"
                                     "dock-ajj-mbp-1" "dock-ajj-mbp-1.esc.rl.ac.uk"))
                  "ajj-mbp-1")
-                ((string= (substring (system-name) -16) "nubes.stfc.ac.uk") "SCD-cloud")
+                ;; To check the last part of hostname, we first pad to at least 16 char to avoid error on short names
+                ((string= (substring (string-pad (system-name) 16) -16) "nubes.stfc.ac.uk") "SCD-cloud")
                 ((string-match "host-[[:digit:]]+-[[:digit:]]+-[[:digit:]]+-[[:digit:]]+" (system-name)) "SCD-cloud")
                 ('t hostname))
           ))
@@ -694,16 +695,27 @@ export relevant variables.
 #+end_src
 
 *** Paths
-On Arctopus we need to add /usr/bin to the PATH because otherwise it
-won't be there. I had this configured as a "universal variable" in
-=~/.config/fish/fish_variables= but that led to some confusing
-incorrect ordering.
+Some systems don't set =~/.local/bin= or =/usr/bin= automatically. The
+former seems a liability for non-interactive use, wheras the latter
+should really always be available.
 
-#+begin_src fish :tangle (if (equal system "Arctopus") "fish/.config/fish/config.fish" "no")
-set -xp PATH /usr/bin
+#+begin_src fish :tangle "fish/.config/fish/config.fish"
+if not contains /usr/bin $PATH
+    set -xp PATH /usr/bin
+end
+
+if status is-interactive
+    if not contains $HOME/.local/bin $PATH
+        set -xp PATH $HOME/.local/bin
+    end   
+end
 #+end_src
 
-*** Arctopus: conda setup
+I'm currently having some trouble on Arctopus where /usr/bin always
+ends up really early on the path; I think this is happening before
+Fish is launched, but haven't yet found where. Could be =/etc/gdm=?
+
+*** Conda setup
 Conda block is machine-specific, used to set default conda environment:
 #+begin_src fish :tangle (if (equal system "Arctopus") "fish/.config/fish/config.fish" "no")
 # >>> conda initialize >>>
@@ -723,10 +735,8 @@ end
 # <<< conda initialize <<<
 #+end_src
 
-On SCD-cloud images we also need to add ~/.local/bin: do this before
-mamba stuff so environments take priority.
-#+begin_src fish :tangle (if (equal system "SCD-cloud") "fish/dot-config/fish/config.fish" "no")
-set -xp PATH $HOME/.local/bin
+#+begin_src fish :tangle (if (equal system "SCD-cloud") "fish/.config/fish/config.fish" "no")
+# set -xp PATH $HOME/.local/bin
 
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'mamba init' !!
@@ -808,6 +818,26 @@ aliases/functions do not automatically get passed into subshells.
 (Presumably this is why it is important to EXPORT any path
 manipulation; this allows it to get into any non-login subshells you
 launch.)
+
+*** sh profile
+=~/.profile= is run by non-bash login sessions. Usually this will be
+the graphical interface.
+
+On Arctopus we add ~/.local/bin to path at this point so that the
+custom build of dmenu is available to i3. This seems a slightly
+dangerous/sweeping way of doing that; maybe it would be better to
+limit the scope to a directory that only contains those programs.
+
+We'll put this under the "bash" folder which isn't strictly correct
+(it uses =sh=) but makes sense when installing things.
+
+#+begin_src bash :tangle (if (equal system "Arctopus") "bash/dot-profile" "no")
+# Put custom scripts on the path where i3 can see them
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+#+end_src
+
 
 *** Profile
    :PROPERTIES:
