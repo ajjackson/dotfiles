@@ -1253,7 +1253,7 @@ from a blog post
 
 * SSH
    :PROPERTIES:
-   :header-args: :tangle "ssh/dot-ssh/config" :mkdirp yes
+   :header-args: :tangle "ssh/.ssh/config" :mkdirp yes
    :END:
 
 My ssh config draws significant inspiration from (outragously steals from)
