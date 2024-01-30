@@ -1134,7 +1134,7 @@ Bash completion doesn't load automatically on a Mac if installed with Homebrew.
 
 * Tmux
    :PROPERTIES:
-   :header-args: :tangle "tmux/.config/tmux/tmux.conf" :mkdirp yes
+   :header-args: :tangle "tmux/dot-tmux.conf" :mkdirp yes
    :END:
 
 I'm not using tmux so much on the desktop with i3 but it still has its
@@ -1160,7 +1160,7 @@ what I'm comfortable with.
 
 Add a shortcut for refreshing the config.
 #+BEGIN_SRC conf
-  bind-key r source-file ~/dot-tmux.conf
+  bind-key r source-file ~/.tmux.conf
 #+END_SRC
 
 When accessing a tmux session that was initiated in smaller window,
