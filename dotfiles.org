@@ -612,12 +612,57 @@ https://github.com/polybar/polybar. The [[https://github.com/polybar/polybar/wik
 #+end_src
 
 * Alacritty
-  :PROPERTIES:
-  :header-args: :tangle "alacritty/.config/alacritty/alacritty.yml" :mkdirp yes
-  :END:
 
 Configuration for Alacritty GPU-enhanced terminal emulator. I mostly
 use defaults for this, actually!
+
+Alacritty has deprectated the yaml config I was using, and provided a
+migration tool. Still, I need to hack some of my literate emacs magic back in by hand...
+
+** New TOML config
+:PROPERTIES:
+:header-args: :tangle "alacritty/.config/alacritty/alacritty.toml" :mkdirp yes
+:END:
+
+Transparency is fun and lets us see our desktop background while working!
+#+begin_src toml
+[window]
+opacity = 0.9
+
+#+end_src
+
+Colour theme for Arctopus matching Hob wallpaper:
+#+begin_src toml :tangle (if (equal system "Arctopus") "alacritty/.config/alacritty/alacritty.toml" "no")
+  [colors.bright]
+  black = "0x63738c"
+  blue = "0x8cc7fe"
+  cyan = "0x34e2e2"
+  green = "0x94a7ae"
+  magenta = "0xad7fa8"
+  red = "0xef2929"
+  white = "0xeeeeec"
+  yellow = "0xe1c258"
+
+  [colors.normal]
+  black = "0x2d3540"
+  blue = "0x6c84a4"
+  cyan = "0x06989a"
+  green = "0x757f89"
+  magenta = "0x75507b"
+  red = "0xcc0000"
+  white = "0xd3d7cf"
+  yellow = "0xcfa43e"
+
+  [colors.primary]
+  background = "0x2d3c59"
+  foreground = "0xecf2f0"
+
+#+end_src
+
+** COMMENT old YAML config
+  :PROPERTIES:
+  :header-args: :tangle "alacritty/.config/alacritty/alacritty.yml" :mkdirp yes
+  :END:
 
 This config format allows some parts to be imported from separate files with syntax such as
 
