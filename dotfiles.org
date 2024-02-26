@@ -797,6 +797,14 @@ included in this repository. I didn't write it so not much point
 having it in the literate file here. It is copied to .
 config/fish/functions
 
+*** zoxide
+#+begin_src fish
+  if which zoxide
+      zoxide init fish | source
+  end
+#+end_src
+
+
 *** Environment modules
 If environment modules are installed:
 - initialise
