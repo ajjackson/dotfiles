@@ -1,4 +1,4 @@
-FROM mambaorg/micromamba:1.5.1-focal
+FROM mambaorg/micromamba:bookworm-slim
 COPY --chown=$MAMBA_USER:$MAMBA_USER containers/env.yaml /tmp/env.yaml
 COPY containers/micromamba-apt-packages.txt /tmp/apt-packages.txt
 
@@ -14,8 +14,6 @@ WORKDIR /home/$MAMBA_USER
 
 RUN micromamba install -y -n base -f /tmp/env.yaml && \
     micromamba clean --all --yes
-
-RUN bash -c 'eval "$(micromamba shell hook --shell bash)"; micromamba activate base; condax install "emacs<29" '
 
 COPY --chown=$MAMBA_USER:$MAMBA_USER containers/entrypoint.sh /tmp/entrypoint.sh
 RUN chmod +x /tmp/entrypoint.sh

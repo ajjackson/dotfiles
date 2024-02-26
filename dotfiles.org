@@ -744,16 +744,22 @@ Some systems don't set =~/.local/bin= or =/usr/bin= automatically. The
 former seems a liability for non-interactive use, wheras the latter
 should really always be available.
 
-#+begin_src fish :tangle "fish/.config/fish/config.fish"
-if not contains /usr/bin $PATH
-    set -xp PATH /usr/bin
-end
+I also sometimes have a separate =~/bin=; wheras =~.local/bin= is for
+things installed by condax or Pip, =~/bin= is mostly for things I
+compiled locally.
 
-if status is-interactive
-    if not contains $HOME/.local/bin $PATH
-        set -xp PATH $HOME/.local/bin
-    end   
-end
+#+begin_src fish :tangle "fish/.config/fish/config.fish"
+  if not contains /usr/bin $PATH
+      set -xp PATH /usr/bin
+  end
+
+  if status is-interactive
+      for BINDIR in $HOME/.local/bin $HOME/bin
+          if not contains $BINDIR $PATH
+              set -xp PATH $BINDIR
+          end
+      end
+  end
 #+end_src
 
 I'm currently having some trouble on Arctopus where /usr/bin always
@@ -761,34 +767,32 @@ ends up really early on the path; I think this is happening before
 Fish is launched, but haven't yet found where. Could be =/etc/gdm=?
 
 *** Conda setup
-Conda block is machine-specific, used to set default conda environment:
-#+begin_src fish :tangle (if (equal system "Arctopus") "fish/.config/fish/config.fish" "no")
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-if test -f /home/adam/.conda/envs/science/bin/conda
-    eval /home/adam/.conda/envs/science/bin/conda "shell.fish" "hook" $argv | source
-end
-# <<< conda initialize <<<
-#+end_src
+I use Conda on most machines but it's not always installed the same
+way. On Fedora workstations we use system installation. Otherwise,
+have a look to see if some kind of (micro)mamba is available and get
+the fish shell hook set up.
 
-#+begin_src fish :tangle (if (equal system "scpc041") "fish/.config/fish/config.fish" "no")
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-if test -f /home/adamjackson/mambaforge/bin/conda
-    eval /home/adamjackson/mambaforge/bin/conda "shell.fish" "hook" $argv | source
-end
-# <<< conda initialize <<<
-#+end_src
+Note that with older versions of fish (3.1ish?) the micromamba shell
+init will fail, because it uses more recent features of
+string-split.
 
-#+begin_src fish :tangle (if (equal system "SCD-cloud") "fish/.config/fish/config.fish" "no")
-# set -xp PATH $HOME/.local/bin
+#+begin_src fish :tangle (if (not (equal system "Arctopus")) "fish/.config/fish/config.fish" "no")
+  if test -d /home/adam/.conda/envs/science
+      # This is Arctopus, system Conda is in charge
+      eval conda "shell.fish" "hook" $argv | source
 
-# >>> mamba initialize >>>
-# !! Contents within this block are managed by 'mamba init' !!
-set -gx MAMBA_EXE "/home/prg49555/bin/micromamba"
-set -gx MAMBA_ROOT_PREFIX "/home/prg49555/micromamba"
-$MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
-# <<< mamba initialize <<<
+  else if test -d $MAMBA_ROOT_PREFIX -a -f $MAMBA_EXE
+      # Mamba path already configured, this is probably a mambaorg/micromamba container
+
+  else if test -d $HOME/micromamba
+      # Micromamba unpacked in home directory, probably a VM or server
+      set MAMBA_ROOT_PREFIX $HOME/micromamba
+      set MAMBA_EXE (which micromamba)
+  end
+
+  if test -f {$MAMBA_EXE}
+      $MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
+  end
 #+end_src
 
 *** Functions
@@ -799,7 +803,7 @@ config/fish/functions
 
 *** zoxide
 #+begin_src fish
-  if which zoxide
+  if which zoxide &> /dev/null
       zoxide init fish | source
   end
 #+end_src
