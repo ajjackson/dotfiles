@@ -669,6 +669,13 @@ checking Bash scripts.
     )
 #+END_SRC
 
+** Fish
+I've been using the fish shell lately and really like it. Fish-mode
+gets syntax highlighting to work.
+#+begin_src elisp
+  (if (executable-find "fish")
+      (use-package fish-mode))
+#+end_src
 ** Python
 This has been through a few iterations and I've had some frustrating
 times with Jedi, Elpygen and other packages. For now keep things simple-ish.
