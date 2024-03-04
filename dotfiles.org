@@ -846,6 +846,25 @@ set -xp PATH $HOME/.local/bin
 #+end_src
 
 
+*** Mantid / git
+Some git aliases should go into ~/src/mantid/.git/config if it
+exists. As well as the usual =add-data= which is needed to upload test
+data, we can add some aliases that make working from Fish a bit nicer.
+(Basically, the mamba-installed GCC doesn't configure the Fish
+environment properly. The simplest workaround is to wrap our
+build/test runs in a bash call.)
+
+#+begin_src fish
+  if test -f $HOME/src/mantid/.git/config
+      pushd $HOME/src/mantid
+      git config alias.build '!bash -cl "$MAMBA_EXE activate mantid-developer && cd ~/src/mantid && cmake --preset=linux && cd build && ninja"'
+      git config alias.build-tests '!bash -cl "$MAMBA_EXE activate mantid-developer && cd ~/src/mantid && cmake --preset=linux && cd build && ninja AllTests"'
+      git config alias.ctest '!bash -cl "$MAMBA_EXE activate mantid-developer && cd ~/src/mantid/build && ctest $*"'
+      git config alias.systemtest '!bash -cl "$MAMBA_EXE activate mantid-developer && cd ~/src/mantid/build && ./systemtest $*"'
+      popd
+  end
+#+end_src
+
 ** Bash
 I still get a bit confused about bashrc vs bash_profile...
 
