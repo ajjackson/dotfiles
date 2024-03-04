@@ -776,22 +776,30 @@ Note that with older versions of fish (3.1ish?) the micromamba shell
 init will fail, because it uses more recent features of
 string-split.
 
-#+begin_src fish :tangle (if (not (equal system "Arctopus")) "fish/.config/fish/config.fish" "no")
+#+begin_src fish
   if test -d /home/adam/.conda/envs/science
       # This is Arctopus, system Conda is in charge
       eval conda "shell.fish" "hook" $argv | source
 
-  else if test -d $MAMBA_ROOT_PREFIX -a -f $MAMBA_EXE
+  else if test -d "$MAMBA_ROOT_PREFIX" -a -f "$MAMBA_EXE"
       # Mamba path already configured, this is probably a mambaorg/micromamba container
 
-  else if test -d $HOME/micromamba
+  else if test -d "$HOME/mambaforge"
+      # Probably a macbook
+      set MAMBA_ROOT_PREFIX $HOME/mambaforge
+      set CONDA_EXE $HOME/mambaforge/bin/conda
+
+  else if test -d "$HOME/micromamba"
       # Micromamba unpacked in home directory, probably a VM or server
       set MAMBA_ROOT_PREFIX $HOME/micromamba
       set MAMBA_EXE (which micromamba)
   end
 
-  if test -f {$MAMBA_EXE}
+  if test -f "$MAMBA_EXE"
       $MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
+  else if test -f "$CONDA_EXE"
+      eval $CONDA_EXE "shell.fish" "hook" $argv | source
+      source $MAMBA_ROOT_PREFIX/etc/fish/conf.d/mamba.fish
   end
 #+end_src
 
@@ -991,6 +999,7 @@ export relevant variables.
   fi
 #+end_src
 
+
 **** Editor
     The choice of editor is fairly clear at this point.
 
@@ -1002,6 +1011,33 @@ export relevant variables.
     export ALTERNATE_EDITOR=""
     #+END_SRC
 
+**** Conda
+On Mac the conda setup gets put in .bash_profile as this is the only
+file people can assume will be run. For now put it here in a
+system-specific block; should generalise this at some point as we have
+done for fish.
+
+#+begin_src bash :tangle (if (equal system "ajj-mbp-1") "bash/dot-bash_profile" "no")
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/adam/mambaforge/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/adam/mambaforge/etc/profile.d/conda.sh" ]; then
+        . "/Users/adam/mambaforge/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/adam/mambaforge/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+
+if [ -f "/Users/adam/mambaforge/etc/profile.d/mamba.sh" ]; then
+    . "/Users/adam/mambaforge/etc/profile.d/mamba.sh"
+fi
+# <<< conda initialize <<<
+
+#+end_src
 
 **** Finally
 Source bashrc for the stuff that should be run for every bash shell
