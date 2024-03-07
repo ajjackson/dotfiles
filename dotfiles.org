@@ -795,7 +795,11 @@ string-split.
       set MAMBA_EXE (which micromamba)
   end
 
-  if test -f "$MAMBA_EXE"
+  if test -d "$HOME/mambaforge"
+      # Probably a macbook
+      eval $CONDA_EXE "shell.fish" "hook" $argv | source
+      source $MAMBA_ROOT_PREFIX/etc/fish/conf.d/mamba.fish
+  else if test -f "$MAMBA_EXE"
       $MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
   else if test -f "$CONDA_EXE"
       eval $CONDA_EXE "shell.fish" "hook" $argv | source
@@ -940,7 +944,7 @@ Whether using lmod or the old tcl environment-modules, the standard
 location for init files is the same.
 
 #+begin_src bash
-  for MODULEINIT in /usr/share/Modules/init/bash
+  for MODULEINIT in /usr/share/Modules/init/bash /usr/local/opt/modules/init/bash
   do
     if [ -f ${MODULEINIT} ]; then
       source ${MODULEINIT}
@@ -1234,7 +1238,7 @@ a remote terminal.
 Bash completion doesn't load automatically on a Mac if installed with Homebrew.
 
 #+BEGIN_SRC bash :tangle (if (equal system-type 'darwin) "bash/dot-bash_profile" "no")
-  for COMPLETION in /usr/local/etc/bash_completion ${HOME}/.local/completions/*
+  for COMPLETION in /usr/local/etc/profile.d/bash_completion.sh ${HOME}/.local/completions/*
   do
       if [ -f ${COMPLETION} ]; then
           source ${COMPLETION}
