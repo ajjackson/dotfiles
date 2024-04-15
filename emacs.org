@@ -91,7 +91,7 @@ may be worth opening a PR to fix it, but I'm not sure if there is anyone at
 
   (elpaca-wait)
   (use-package use-package
-    :elpaca nil
+    :ensure nil
     :custom
     (use-package-verbose nil)
     (use-package-compute-statistics nil)
@@ -561,10 +561,10 @@ MELPA version has some dependency problems (needs a very new Emacs
 maybe?) so pin a stable version from source.
     #+BEGIN_SRC elisp
             (use-package transient
-              :elpaca (:host github :repo "magit/transient" :tag"v0.4.3"))
+              :ensure (:host github :repo "magit/transient" :tag"v0.4.3"))
 
             (use-package magit
-              :elpaca (:host github :repo "magit/magit" :tag "v3.3.0")
+              :ensure (:host github :repo "magit/magit" :tag "v3.3.0")
               :chords (("dg" . magit-status)))
     #+END_SRC
 
@@ -768,7 +768,7 @@ Set up file associations. (Hmm, =.gin= is also the GULP input
 extension, but I don't have a package for that.)
 #+BEGIN_SRC elisp
   (use-package gibbs2
-    :elpaca nil
+    :ensure nil
     :config
     (add-to-list 'auto-mode-alist '("\\.gin\\'" . gibbs2-mode))
     (add-to-list 'auto-mode-alist '("\\.ing\\'" . gibbs2-mode))
