@@ -240,13 +240,14 @@ the macro does not run until the inner function has been evaluated.
 
      ;; Install solarized if necessary, then load
      ((equal preferred-theme 'solarized)
-      (eval `(elpaca
-                 ,(assoc 'solarized-theme (elpaca-menu-non-gnu-elpa 'index))
-               (require 'solarized)
-               (load-theme 'solarized-dark t)
-               )))
+      (progn
+        (use-package solarized-theme :config (require 'solarized))
+        (elpaca-wait)
+        (load-theme 'solarized-dark t)
+        )
+      )
 
-     ;; If not solarized, load by name
+     ;; ;; If not solarized, load by name
      (preferred-theme (load-theme preferred-theme t))
 
      ;; Fall back to a nice theme if none specified
@@ -1216,6 +1217,8 @@ Use citar to insert citations from system-wide bibtex file
     (setq org-cite-activate-processor 'citar)
     (setq citar-bibliography '("~/braindump/zotero_lib.bib"))
     (require 'citar-format)
+    (require 'citar)
+    (require 'citar-org)
     )
 #+end_src
 
