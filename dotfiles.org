@@ -1257,7 +1257,7 @@ Bash completion doesn't load automatically on a Mac if installed with Homebrew.
 
 * Tmux
    :PROPERTIES:
-   :header-args: :tangle "tmux/dot-tmux.conf" :mkdirp yes
+   :header-args: :tangle "tmux/.config/tmux/tmux.conf" :mkdirp yes
    :END:
 
 I'm not using tmux so much on the desktop with i3 but it still has its
@@ -1283,7 +1283,7 @@ what I'm comfortable with.
 
 Add a shortcut for refreshing the config.
 #+BEGIN_SRC conf
-  bind-key r source-file ~/.tmux.conf
+  bind-key r source-file ~/.config/tmux/tmux.conf
 #+END_SRC
 
 When accessing a tmux session that was initiated in smaller window,
@@ -1347,7 +1347,7 @@ Linux. On Mac we need to install "reattach-to-user-namespace"
 
 #+BEGIN_SRC conf :tangle (if (equal system-type 'darwin) "tmux/.config/tmux/tmux.conf" "")
     # http://iancmacdonald.com/macos/emacs/tmux/2017/01/15/macOS-tmux-emacs-copy-past.html
-    set-option -g default-command "reattach-to-user-namespace -l bash"
+    set-option -g default-command "reattach-to-user-namespace -l $SHELL"
     bind-key -T copy-mode 'C-w' send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
     bind-key -T copy-mode 'M-w' send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
     bind-key -T copy-mode Enter send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
