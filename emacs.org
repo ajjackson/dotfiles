@@ -723,20 +723,21 @@ As are highlighted matching parentheses.
   (add-hook 'python-mode-hook 'show-parens-python)
 #+END_SRC
 
-*** COMMENT Formatters
-I have used py-yapf in the past for PEP8 formatting
-#+BEGIN_SRC elisp
-  (if (executable-find "yapf")
-      (use-package py-yapf
-        :ensure t
-        :config
-        (defalias 'py 'py-yapf-buffer)))
-#+END_SRC
-
+*** Formatters
 As I now interact with a couple of projects that favour Black, perhaps
 it would be worth looking into [[https://github.com/wbolster/emacs-python-black][python-black.el]] which has the useful
 feature that it can use the [[https://github.com/wbolster/black-macchiato][black-macchiato]] package to reformat a
 selected region.
+#+begin_src elisp
+  (use-package python-black
+    :ensure t
+    :init
+    (setq
+     python-black-command "~/.condax/black/bin/black"
+     python-black-macchiato-command "~/.condax/black/bin/black-macchiato"
+     ))
+#+end_src
+
 
 ** COMMENT Julia
 Julia is a beautiful programming language that brings together some
