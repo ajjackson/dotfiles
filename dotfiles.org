@@ -766,6 +766,13 @@ I'm currently having some trouble on Arctopus where /usr/bin always
 ends up really early on the path; I think this is happening before
 Fish is launched, but haven't yet found where. Could be =/etc/gdm=?
 
+On a Mac we also want homebrew
+#+begin_src fish :tangle (if (equal system-type 'darwin) "fish/.config/fish/config.fish" "no")
+  if test -d /opt/homebrew
+      eval (/opt/homebrew/bin/brew shellenv)
+  end
+#+end_src
+
 *** Conda setup
 I use Conda on most machines but it's not always installed the same
 way. On Fedora workstations we use system installation. Otherwise,
@@ -1238,7 +1245,7 @@ a remote terminal.
 Bash completion doesn't load automatically on a Mac if installed with Homebrew.
 
 #+BEGIN_SRC bash :tangle (if (equal system-type 'darwin) "bash/dot-bash_profile" "no")
-  for COMPLETION in /usr/local/etc/profile.d/bash_completion.sh ${HOME}/.local/completions/*
+  for COMPLETION in /usr/local/etc/profile.d/bash_completion.sh /opt/homebrew/etc/profile.d/bash_completion.sh ${HOME}/.local/completions/*
   do
       if [ -f ${COMPLETION} ]; then
           source ${COMPLETION}
