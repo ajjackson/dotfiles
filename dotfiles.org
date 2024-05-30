@@ -28,13 +28,12 @@ probabably needs to authorise this with 'y'.
               ('t nil)))
 
   (defmacro if-workstation (arg1 arg2)
-    `(if (member ,system '("Arctopus" "scpc041" "ajj-mbp-1"))
+    `(if (member ,system '("Arctopus" "scpc041" "ajj-mbp-1" "SCLT452Mac"))
          ,arg1 ,arg2))
 #+end_src
 
 #+RESULTS: guess-system
 : if-workstation
-
 
 * i3
   :PROPERTIES:
