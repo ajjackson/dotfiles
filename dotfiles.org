@@ -1056,10 +1056,13 @@ Source bashrc for the stuff that should be run for every bash shell
   source $HOME/.bashrc
 #+end_src
 
+
 *** RC
    :PROPERTIES:
    :header-args: :tangle   bash/dot-bashrc
    :END:
+
+**** Environment
 
 Source system-wide bashrc if available
 #+begin_src bash
@@ -1075,6 +1078,15 @@ needed any more.
 #+begin_src bash
   if [ -f $HOME/.modules ]; then
       module load $(cat $HOME/.modules)
+  fi
+#+end_src
+
+Non-ancient versions of tmux set TERM to tmux-256color, but not many tools
+know how to work with that so use screen-256color instead.
+
+#+begin_src bash
+  if [ $TERM = tmux-256color ]; then
+      export TERM=screen-256color
   fi
 #+end_src
 
@@ -1119,6 +1131,17 @@ input files etc? For now lets not bother with that stuff.
   alias fgrep='fgrep --color=auto'
   alias egrep='egrep --color=auto'
 #+END_SRC
+
+***** Schedulers
+I'm just using slurm at the moment, but we can check if it is
+available before setting alias.
+
+#+BEGIN_SRC bash
+if test $(command -v squeue)
+then
+    alias myjob='squeue -u $USER'
+fi
+#+END_SRC bash
 
 ***** Shortcuts
 #+BEGIN_SRC bash
