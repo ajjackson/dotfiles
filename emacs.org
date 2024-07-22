@@ -677,6 +677,13 @@ gets syntax highlighting to work.
   (if (executable-find "fish")
       (use-package fish-mode))
 #+end_src
+
+** Snakemake
+#+begin_src elisp
+(use-package snakemake-mode :ensure t)
+#+end_src
+
+
 ** Python
 This has been through a few iterations and I've had some frustrating
 times with Jedi, Elpygen and other packages. For now keep things simple-ish.
