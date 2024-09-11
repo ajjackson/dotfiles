@@ -730,7 +730,33 @@ As are highlighted matching parentheses.
   (add-hook 'python-mode-hook 'show-parens-python)
 #+END_SRC
 
-*** Formatters
+Line number is also useful
+#+begin_src elisp
+  (add-hook 'python-mode-hook 'display-line-numbers-mode)
+#+end_src
+
+
+*** Linting and formatters
+It is useful to call a linter directly from the file. I used to rely
+on the =flake8= function which seems to have vanished, but
+=python-check= is available with a useful shortcut (C-c C-v). It
+defaults to pylint, which I find a bit overkill so let's use flake8
+again.  With an absolute path to =~/.local/bin=, we can find linters
+installed with condax.
+
+We also need to setup a colour terminal so that the special characters don't look terrible.
+#+begin_src elisp
+  (setq python-check-command "~/.local/bin/flake8")
+
+  (require 'ansi-color)
+  (defun colorize-compilation-buffer ()
+    (ansi-color-apply-on-region compilation-filter-start (point)))
+  (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+#+end_src
+
+Maybe a smarter setup could look for pre-commit or ruff and run those
+if available.
+
 As I now interact with a couple of projects that favour Black, perhaps
 it would be worth looking into [[https://github.com/wbolster/emacs-python-black][python-black.el]] which has the useful
 feature that it can use the [[https://github.com/wbolster/black-macchiato][black-macchiato]] package to reformat a
