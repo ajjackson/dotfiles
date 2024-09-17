@@ -492,10 +492,12 @@ initial "search" brings up short keys which are used to jump to
 the desired match. Quicker than C-s when you are already looking
 at the work you want to jump to.
 #+BEGIN_SRC elisp
-  (use-package avy
-    :bind (("C-;" . avy-goto-word-or-subword-1)
-           ("C-'" . avy-goto-line)
-           ))
+    (use-package avy
+      :bind (("C-;" . avy-goto-word-or-subword-1)
+             ("C-'" . avy-goto-line)
+             )
+      :chords (("fg" . avy-goto-word-or-subword-1)
+               ("df" . avy-goto-line)))
 #+END_SRC
 
 Ace-window is a less annoying way of changing window pane; if
