@@ -197,6 +197,7 @@ gone so we avoid cluttering the namespace.
             ("dock-ajj-mbp-1" . "Input Mono-16")
             ("dock-ajj-mbp-1.esc.rl.ac.uk" . "Input Mono-16")
             ("Arctopus" . "Inconsolata-12")
+            ("SCLT452Mac". "Inconsolata:weight=Medium:width=SemiCondensed:size=18")
             ))
          (preferred-font
           (cdr (assoc system-name system-preferred-fonts))))
