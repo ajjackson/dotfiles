@@ -380,7 +380,7 @@ for the buffer menu.
    Quick version of commands that are often accessed with M-x but not worth giving their own binding.
    #+BEGIN_SRC elisp
    (defalias 'rb 'revert-buffer)
-   (defalias 'lm 'linum-mode)
+   (defalias 'lm 'display-line-numbers-mode)
    (defalias 'wsm 'whitespace-mode)
    (defalias 'wsc 'whitespace-cleanup)
    (defalias 'db 'diff-buffer-with-file)
