@@ -1396,6 +1396,8 @@ from a blog post
           lol = log --graph --decorate --pretty=oneline --abbrev-commit --all --color
   [init]
           defaultBranch = main
+  [rebase]
+          autosquash = true
 #+END_SRC
 
 * SSH
