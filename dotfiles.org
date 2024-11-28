@@ -875,13 +875,15 @@ build/test runs in a bash call.)
 #+begin_src fish
   if test -f $HOME/src/mantid/.git/config
       pushd $HOME/src/mantid
-      git config alias.build '!bash -cl "$(basename $MAMBA_EXE) activate mantid-developer && cd ~/src/mantid && cmake --preset=linux && cd build && ninja"'
-      git config alias.build-tests '!bash -cl "$(basename $MAMBA_EXE) activate mantid-developer && cd ~/src/mantid && cmake --preset=linux && cd build && ninja AllTests"'
-      git config alias.ctest '!bash -cl "$(basename $MAMBA_EXE) activate mantid-developer && cd ~/src/mantid/build && ctest $*"'
-      git config alias.systemtest '!bash -cl "$(basename $MAMBA_EXE) activate mantid-developer && cd ~/src/mantid/build && ./systemtest $*"'
+      git config alias.build '!bash -cl \'$(basename $MAMBA_EXE) activate mantid-developer && cd ~/src/mantid && cmake --preset=linux && cd build && ninja\''
+      git config alias.build-tests '!bash -cl \'$(basename $MAMBA_EXE) activate mantid-developer && cd ~/src/mantid && cmake --preset=linux && cd build && ninja AllTests\''
+      git config alias.ctest '!bash -cl \'$(basename $MAMBA_EXE) activate mantid-developer && cd ~/src/mantid/build && ctest $*\' -'
+      git config alias.systemtest '!bash -cl \'$(basename $MAMBA_EXE) activate mantid-developer && cd ~/src/mantid/build && ./systemtest $*\' -'
       popd
   end
 #+end_src
+
+#+RESULTS:
 
 ** Bash
 I still get a bit confused about bashrc vs bash_profile...
