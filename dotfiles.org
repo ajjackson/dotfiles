@@ -1170,7 +1170,7 @@ if test $(command -v squeue)
 then
     alias myjob='squeue -u $USER'
 fi
-#+END_SRC bash
+#+END_SRC
 
 ***** Shortcuts
 #+BEGIN_SRC bash
