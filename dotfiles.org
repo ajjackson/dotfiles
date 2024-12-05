@@ -261,7 +261,7 @@ This is system-dependent, use xrandr commands to rotate and position monitors
   # Sort out monitor positions
   exec xrandr --output DP-1 --rotate left --left-of DP-2 --pos 0x0
   exec xrandr --output DP-2 --pos 1080x520
-       
+
   # They are in the wrong order so assign initial workspaces
   workspace 1 output DP-2
   workspace 2 output DP-1
@@ -718,10 +718,18 @@ colors:
    :header-args: :tangle "fish/.config/fish/config.fish" :mkdirp yes
    :END:
 
+Emacs can require a workaround to deal with glibc incompatibility; see
+corresponding section of Bash config for more info.
 #+begin_src fish
   if status is-interactive
       # Commands to run in interactive sessions can go here
-      set -x EDITOR "emacsclient -t"
+
+      if test -f "/usr/lib64/libc_malloc_debug.so.0"
+          set -x EDITOR="LD_PRELOAD=/usr/lib64/libc_malloc_debug.so.0 emacsclient -t"
+      else
+          set -x EDITOR "emacsclient -t"
+      end
+
       set -x ALTERNATE_EDITOR ''
       alias em $EDITOR
   end
@@ -1018,9 +1026,21 @@ export relevant variables.
     ~ALTERNATE_EDITOR=""~ means emacsclient will start a new daemon if
     none is available. This makes opening a new editor instantaneous
     after the first one.
+
+    LD_PRELOAD is needed when using Emacs from conda-forge (built
+    against old libc) on a recent Linux version (built against new
+    libc). Apparently Emacs was pretty much the only program using
+    this deprecated feature! See
+    https://github.com/conda-forge/emacs-feedstock/issues/63
+
     #+BEGIN_SRC bash
-    export EDITOR="emacsclient -t"
-    export ALTERNATE_EDITOR=""
+      if [[ -f "/usr/lib64/libc_malloc_debug.so.0" ]]; then
+          export EDITOR="LD_PRELOAD=/usr/lib64/libc_malloc_debug.so.0 emacsclient -t"
+      else
+          export EDITOR="emacsclient -t"
+      fi
+
+      export ALTERNATE_EDITOR=""
     #+END_SRC
 
 **** Conda
@@ -1091,6 +1111,13 @@ know how to work with that so use screen-256color instead.
       export TERM=screen-256color
   fi
 #+end_src
+
+Compatibility fix for new versions of glibc with conda-forge emacs
+
+#+begin_src bash
+  export LD_PRELOAD=/usr/lib64/libc_malloc_debug.so.0
+#+end_src
+
 
 **** Appearance
 Check the window size after each command, updating LINES and COLUMNS
