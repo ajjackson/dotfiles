@@ -1413,19 +1413,26 @@ whereas on Linux we use xclip.
 #+END_SRC
 
 * Git
-Pretty barebones git config really; one pretty logging alias borrowed
-from a blog post
+Pretty barebones git config really
 #+BEGIN_SRC conf :tangle git/dot-gitconfig :mkdirp yes
   [user]
           name = Adam J. Jackson
           email = a.j.jackson@physics.org
-  [alias]
-          lol = log --graph --decorate --pretty=oneline --abbrev-commit --all --color
   [init]
           defaultBranch = main
   [rebase]
           autosquash = true
 #+END_SRC
+** aliases
+- =git lol= is a classic, found passed around the internet
+  #+BEGIN_SRC conf :tangle git/dot-gitconfig
+    [alias]
+            lol = log --graph --decorate --pretty=oneline --abbrev-commit --all --color
+  #+END_SRC
+- Here are some nice ones from https://www.reddit.com/r/commandline/comments/wf7oju:
+  #+BEGIN_SRC conf :tangle git/dot-gitconfig
+            pr = "!f() { git fetch --force origin pull/$1/head:pr-$1; }; f"
+  #+END_SRC
 
 * SSH
    :PROPERTIES:
