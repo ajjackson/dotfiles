@@ -376,8 +376,10 @@ The Elpaca README says this hook should really go in
 *this* buffer.  The other 1% of the time I can use `C-x B`
 for the buffer menu.
 
+(Confusingly, "kill-this-buffer" doesn't always work so we use "kill-current-buffer".)
+
 #+BEGIN_SRC elisp
-  (global-set-key (kbd "C-x k") 'kill-this-buffer)
+  (global-set-key (kbd "C-x k") 'kill-current-buffer)
 #+END_SRC
 
 * Aliases
@@ -429,7 +431,7 @@ for the buffer menu.
    #+BEGIN_SRC elisp
      (key-chord-mode 1)
      (setq key-chord-two-keys-delay 0.05)
-     (key-chord-define-global "xk" 'kill-this-buffer)
+     (key-chord-define-global "xk" 'kill-current-buffer)
      (key-chord-define-global "xb" 'switch-to-buffer)
      (key-chord-define-global "xf" 'find-file)
      (key-chord-define-global "hj" 'execute-extended-command)
