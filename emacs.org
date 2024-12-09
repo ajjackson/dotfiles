@@ -207,6 +207,14 @@ gone so we avoid cluttering the namespace.
           (set-frame-font preferred-font nil t))))
 #+END_SRC
 
+For reference, the elisp to change font sizes (/including/ the mode line and minibuffer) is e.g.
+#+BEGIN_SRC elisp :tangle none
+  ;; Set font size to 40. Note scale factor of 10x!
+  (set-face-attribute 'default nil :height 300)
+#+END_SRC
+It could be nice to figure out a decent binding/shortcut for this.
+There's a neat setup here using hydra: https://emacs.stackexchange.com/a/7584
+
 ** Themes
 Use similar logic as for font sizes to set different theme
 defaults for different machines. Fallback to tango-dark as this
