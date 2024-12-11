@@ -464,13 +464,19 @@ enabling ivy-mode. We also turn off ido-mode here, as it's annoying
 when =C-j= does the wrong thing.
 #+BEGIN_SRC elisp
   (use-package ivy
-    :config
-    (ivy-mode)
-    (setq ivy-use-virtual-buffers t)
-    (setq ivy-count-format "(%d/%d) ")
-    (ido-mode -1))
+      :config
+      (ivy-mode)
+      (setq ivy-use-virtual-buffers t)
+      (setq ivy-count-format "(%d/%d) ")
+      (ido-mode -1))
+
+  ;; Make sure ivy initialises and takes over completing-read
+  (add-hook 'elpaca-after-init-hook
+            (lambda () (ivy-mode 1)))
 
 #+END_SRC
+
+
 
 Counsel sets up a bunch of ivy-completion functions. It also
 provides Swiper, a fancy isearch.
