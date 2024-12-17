@@ -474,10 +474,11 @@ when =C-j= does the wrong thing.
 
 #+END_SRC
 
-
-
 Counsel sets up a bunch of ivy-completion functions. It also
 provides Swiper, a fancy isearch.
+
+In most situations, counsel-buffer-or-recentf is equivalent or better
+than the usual switch-buffer.
 
 #+BEGIN_SRC elisp
   (use-package counsel
@@ -487,6 +488,21 @@ provides Swiper, a fancy isearch.
     :config
     (counsel-mode)
     )
+#+END_SRC
+
+But, infuriatingly, it excludes *Scratch*, *Messages* etc. So to
+access those I use list-buffers and then shuffle around a bit. To save
+some keystrokes, let's automate the usual workflow.
+
+#+BEGIN_SRC elisp
+  (defun list-buffers-and-search ()
+    (interactive)
+    (list-buffers)
+    (select-window (get-buffer-window "*Buffer List*" 0))
+    (swiper)
+    )
+
+  (global-set-key (kbd "C-x C-b") 'list-buffers-and-search)
 #+END_SRC
 
 All-the-icons adds pretty pictures to everything.
