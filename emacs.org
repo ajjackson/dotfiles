@@ -358,13 +358,15 @@ Bookmarks are a great and fundamental feature I always forget to
 use. Maybe initialising the session with them will help?
 
 #+BEGIN_SRC elisp
-    (setq inhibit-splash-screen t)
-    (require 'bookmark)
-    (bookmark-bmenu-list)
+  (setq inhibit-splash-screen t)
+  (require 'bookmark)
+  (bookmark-bmenu-list)
 
-    (add-hook 'emacs-startup-hook
-              (lambda ()
-                  (switch-to-buffer "*Bookmark List*")))
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              ;; If no filename was given, go to bookmarks
+              (if (< (length command-line-args) 2) 
+                (switch-to-buffer "*Bookmark List*"))))
 #+END_SRC
 
 The Elpaca README says this hook should really go in
