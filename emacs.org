@@ -362,11 +362,7 @@ use. Maybe initialising the session with them will help?
   (require 'bookmark)
   (bookmark-bmenu-list)
 
-  (add-hook 'emacs-startup-hook
-            (lambda ()
-              ;; If no filename was given, go to bookmarks
-              (if (< (length command-line-args) 2) 
-                (switch-to-buffer "*Bookmark List*"))))
+  (setq initial-buffer-choice (lambda () (get-buffer "*Bookmark List*")))
 #+END_SRC
 
 The Elpaca README says this hook should really go in
