@@ -583,6 +583,18 @@ now, so if I want to use it the answer is to clone to
 but a better solution would be to figure out a way to elpaca it...
 
 
+* Shells
+  :PROPERTIES:
+  :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
+  :END:
+
+vterm is a more "native" shell from emacs; it should be fast and work
+better with interactive programs like btop.
+
+#+begin_src elisp
+  (use-package vterm :ensure t)
+#+end_src
+
 * Programming languages and syntax highlighting
   :PROPERTIES:
   :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
