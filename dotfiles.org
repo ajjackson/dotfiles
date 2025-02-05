@@ -800,13 +800,13 @@ string-split.
 
   else if test -d "$HOME/mambaforge"
       # Probably a macbook
-      set MAMBA_ROOT_PREFIX $HOME/mambaforge
-      set CONDA_EXE $HOME/mambaforge/bin/conda
+      set -x MAMBA_ROOT_PREFIX $HOME/mambaforge
+      set -x CONDA_EXE $HOME/mambaforge/bin/conda
 
   else if test -d "$HOME/micromamba"
       # Micromamba unpacked in home directory, probably a VM or server
-      set MAMBA_ROOT_PREFIX $HOME/micromamba
-      set MAMBA_EXE (which micromamba)
+      set -x MAMBA_ROOT_PREFIX $HOME/micromamba
+      set -x MAMBA_EXE (which micromamba)
   end
 
   if test -d "$HOME/mambaforge"
