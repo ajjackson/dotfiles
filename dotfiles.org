@@ -1346,12 +1346,23 @@ try to resize it.
 Set up a nice simple blue colour scheme. This plays nicely with solarized,
 tango and my i3/alacrittys themes.
 #+BEGIN_SRC conf
-  set -g status-style bg=blue,fg=white
-  set -g window-status-style bg=blue,fg=brightwhite
-  set -g pane-border-style fg=white
-  set -g pane-active-border-style fg=brightblue
-  set -g message-style bg=white,fg=blue
+    set -g status-style bg=blue,fg=white
+    set -g window-status-style bg=blue,fg=brightwhite
+    set -g window-status-current-style bg=brightwhite,fg=blue
+    set -g pane-border-style fg=white
+    set -g pane-active-border-style fg=brightblue
+    set -g message-style bg=white,fg=blue
+
+    # Highlight when copying
+    setw -g mode-style 'fg=white bg=blue'
 #+END_SRC
+
+Add hostname to status so it's easier to understand how multiple tmux
+instances fit together.
+#+BEGIN_SRC conf
+set -g status-left " #S #(hostname)  "
+#+END_SRC
+
 
 Make history longer so program output doesn't clobber useful stuff.
 #+BEGIN_SRC conf
