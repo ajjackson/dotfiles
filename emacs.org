@@ -605,12 +605,13 @@ I use Magit for 90% of Git stuff, and CLI for some troubleshooting.
 MELPA version has some dependency problems (needs a very new Emacs
 maybe?) so pin a stable version from source.
     #+BEGIN_SRC elisp
-            (use-package transient
-              :ensure (:host github :repo "magit/transient" :tag"v0.4.3"))
+      (use-package transient
+        ;; :ensure (:host github :repo "magit/transient" :tag "v0.4.3")
+        )
 
-            (use-package magit
-              :ensure (:host github :repo "magit/magit" :tag "v3.3.0")
-              :chords (("dg" . magit-status)))
+      (use-package magit
+        ;; :ensure (:host github :repo "magit/magit" :tag "v3.3.0")
+        :chords (("dg" . magit-status)))
     #+END_SRC
 
 We can highlight changes in the "gutters" with a few more packages.
