@@ -133,8 +133,10 @@ packages that aren't managed with elpaca. (i.e. experiments or simple personal p
 
 Hide toolbar, scrollbars
 #+begin_src elisp
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
+  (if (display-graphic-p)
+      (progn
+        (tool-bar-mode -1)
+        (scroll-bar-mode -1)))
 #+end_src
 
 Don't blink the cursor
