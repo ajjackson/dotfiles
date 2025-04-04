@@ -27,14 +27,18 @@ jobs:
         docker exec test_container sh -c "./make.el"
         docker exec test_container sh -c 'stow -t $HOME emacs'
 
+    - name: Install emacs packages
+      run: |
+        docker exec test_container /home/tester/src/tests/install_emacs.sh
+
     - name: Run tests with bats
       run: |
         docker exec test_container sh -c "cd /home/tester/src/tests && ./run_tests.bats"
-        SUCCESS=$?
-        docker exec test_container ls /home/tester/src/tests
+
+    - name: Copy test output
+      if: success() || failure()
+      run: |
         docker cp test_container:/home/tester/src/tests/report.tap ./
-        ls
-        exit $SUCCESS
 
     - name: Create test report
       if: success() || failure()
