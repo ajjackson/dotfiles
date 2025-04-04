@@ -8,7 +8,7 @@ setup_file() {
 }
 
 @test "magit available" {
-      emacsclient -s test -e "(magit-version)"
+      emacsclient -s test -e "(magit-version-xyz)"
 }
 
 @test "ace-window available" {
