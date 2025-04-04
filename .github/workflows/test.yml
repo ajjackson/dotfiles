@@ -29,5 +29,4 @@ jobs:
 
     - name: Run tests with bats
       run: |
-        docker exec -it test_container sh -c "cd /home/tester/src/tests && ./run_tests.bats"
-        ls
+        docker exec test_container sh -c "cd /home/tester/src/tests && ./run_tests.bats"
