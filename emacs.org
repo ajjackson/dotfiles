@@ -483,10 +483,12 @@ In most situations, counsel-buffer-or-recentf is equivalent or better
 than the usual switch-buffer.
 
 #+BEGIN_SRC elisp
+  (use-package swiper :ensure t :bind (("C-s" . swiper)))
+  (elpaca-wait)  ;; counsel doesn't install properly until swiper is in
+
   (use-package counsel
     :ensure t
-    :bind (("C-s" . swiper)
-           ("C-x b" . counsel-buffer-or-recentf))
+    :bind (("C-x b" . counsel-buffer-or-recentf))
     :config
     (counsel-mode)
     )
