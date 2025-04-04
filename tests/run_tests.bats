@@ -1,4 +1,4 @@
-#! /usr/bin/env bats
+#! /usr/bin/env -S bats --pretty --report-formatter tap
 
 setup_file() {
     # One-time setup: start the emacs daemon

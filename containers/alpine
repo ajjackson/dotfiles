@@ -5,7 +5,8 @@ RUN apk add --no-cache \
     emacs-nox \
     stow \
     git \
-    bats-core
+    bats-core \
+    ncurses
 
 RUN adduser -D tester
 
