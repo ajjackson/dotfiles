@@ -3,8 +3,6 @@
 setup_file() {
     # One-time setup: start the emacs daemon
     emacs --daemon=test
-    # Wait for package installer to finish
-    emacsclient -s test -e "(elpaca-wait)"
 }
 
 @test "magit available" {
