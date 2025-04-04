@@ -146,11 +146,7 @@ Don't blink the cursor
 
 Silent bell
 #+begin_src elisp
-  (if (string-equal system-type "darwin")
-      (defun ring-bell-function ()
-        "Visible bell is buggy on OSX El Capitan, so display 'Nope!' instead."
-      (message "Nope!"))
-    (setq visible-bell t))
+  (setq visible-bell t)
 #+end_src
 
 Scroll sensibly with mouse
@@ -716,8 +712,9 @@ checking Bash scripts.
 #+BEGIN_SRC elisp
   (if (executable-find "shellcheck")
       (use-package flycheck
-        :hook ((sh-mode . flycheck-mode)))
-    )
+        :hook ((sh-mode . flycheck-mode))
+        :bind (("M-n" . flycheck-next-error)
+               ("M-p" . flycheck-previous-error))))
 #+END_SRC
 
 ** Fish
@@ -783,6 +780,17 @@ As are highlighted matching parentheses.
 Line number is also useful
 #+begin_src elisp
   (add-hook 'python-mode-hook 'display-line-numbers-mode)
+#+end_src
+
+If we have ruff, flycheck becomes viable
+
+#+begin_src elisp
+  (if (executable-find "ruff")
+      (use-package flycheck
+        :hook ((python-mode . flycheck-mode))
+        :bind (("M-n" . flycheck-next-error)
+               ("M-p" . flycheck-previous-error)))
+    )
 #+end_src
 
 
