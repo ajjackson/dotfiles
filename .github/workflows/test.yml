@@ -30,3 +30,12 @@ jobs:
     - name: Run tests with bats
       run: |
         docker exec test_container sh -c "cd /home/tester/src/tests && ./run_tests.bats"
+        SUCCESS=$?
+        docker exec test_container ls /home/tester/src/tests
+        docker cp test_container:/home/tester/src/tests/report.tap ./
+        ls
+        exit $SUCCESS
+
+    - name: Create test report
+      if: success() || failure()
+      uses: pcolby/tap-summary@v1
