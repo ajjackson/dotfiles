@@ -540,6 +540,23 @@ enter.
     )
 #+END_SRC
 
+** ripgrep
+The ripgrep package provides a really fast way to fly around fils
+searching for phrases. Just use C-s to bring up the transient interface.
+I addded a custom command for searching my org folder (including org-roam notes).
+
+If =rg-menu-transient-insert= is run again it removes the item from
+the menu; so if it's missing, try evaluating that expression again.
+
+#+begin_src elisp
+  (use-package rg
+    :init (rg-enable-default-bindings)
+    :config
+    (defun search-notes (regex) (interactive "sregex: ") (rg regex "*.org" "~/org"))
+    (rg-menu-transient-insert "Search" "n" "notes" 'search-notes)
+    )
+#+end_src
+
 ** COMMENT Currently unused
 Ivy-hydra creates a little hydra interface for working in the Ivy
 buffer. This is usually not needed, but it can be nice to, e.g.,
