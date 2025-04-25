@@ -1,4 +1,0 @@
-fish
-git
-stow
-emacs
