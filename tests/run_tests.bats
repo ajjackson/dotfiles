@@ -17,6 +17,10 @@ setup_file() {
       find . -name "*.toml" | xargs toml-validator
 }
 
+@test "shellcheck: no warnings for bash init scripts" {
+      ls bash/* | xargs shellcheck --shell bash --severity warning
+}
+
 teardown_file() {
     # Kill the emacs daemon
     emacs --batch --exec "(progn (require 'server) (server-eval-at \"test\" '(kill-emacs)))"               

@@ -7,7 +7,8 @@ RUN apk add --no-cache \
     git \
     bats-core \
     ncurses \
-    py3-pip
+    py3-pip \
+    shellcheck
 
 RUN python -m pip install --break-system-packages toml-validator
 
