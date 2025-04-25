@@ -34,7 +34,7 @@ jobs:
 
     - name: Run tests with bats
       run: |
-        docker exec test_container sh -c "cd /home/tester/src/tests && ./run_tests.bats"
+        docker exec test_container sh -c "cd /home/tester/src/tests && bats *.bats --report-formatter tap -j 4"
 
     - name: Copy test output
       if: success() || failure()
