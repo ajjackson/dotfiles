@@ -58,45 +58,21 @@ Instructions
     included in `make.el`, fired off by an optional argument.
 
 - The [dotfiles feature is busted](https://github.com/aspiers/stow/issues/33)
-  on most builds of GNU stow, we need to use a fork for this name
-  conversion to work properly.
+  on most builds of GNU stow; we can still have dot-filenames but
+  directories need to have the literal dot (and so are hard to list
+  etc.)
 
-    ```
-    git clone https://github.com/ajjackson/stow.git
-    cd stow
-    git fetch origin bug-56727
-    git checkout bug-56727
-    autoreconf -iv
-    ./configure --prefix=$HOME/opt/stow --with-pmdir=$HOME/opt/stow
-    make
-    ```
-  builds **stow** under ~/opt/stow
-    
-  - To run the tests we need some other Perl modules installed
-
-      ```
-      cpan
-      > install Test::Output
-      > install Test::More
-      > install IO::Scalar
-      ```
-    Then `make test` should work.
+  I was using a fork to get around this but it was more trouble than
+  it was worth; for now, we use the mainline stow again.
 
 Containers
 ==========
 
-WIP: container can be used to test how this works in a clean environment
-
-Currently, build with
-
-```
-    podman build --tag dotfiles --file containers/micromamba --format Docker .
-```
-
-and run with
-
-```
-    podman run -it --rm dotfiles
-```
-
-Note that I am using a slightly old Ubuntu base for compatibility with conda-forge emacs build.
+An alpine container is defined for unit testing on Github. It can also
+be used manually, just follow the same steps as the CI job:
+- build image
+- run detached container
+- archive the project folder and copy it into the container
+- attach to container (or run commands with e.g. `podman exec`)
+- extract files, run `./make.el` and `stow -t $HOME --dotfiles emacs
+  bash ...` to install desired features.
