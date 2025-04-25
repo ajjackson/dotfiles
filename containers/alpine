@@ -6,7 +6,10 @@ RUN apk add --no-cache \
     stow \
     git \
     bats-core \
-    ncurses
+    ncurses \
+    py3-pip
+
+RUN python -m pip install --break-system-packages toml-validator
 
 RUN adduser -D tester
 
