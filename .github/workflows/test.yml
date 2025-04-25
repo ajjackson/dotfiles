@@ -25,7 +25,8 @@ jobs:
       run: |
         docker exec test_container sh -c "tar -xf dotfiles.tgz"
         docker exec test_container sh -c "./make.el"
-        docker exec test_container sh -c 'stow -t $HOME emacs'
+        docker exec test_container sh -c 'stow -t $HOME --dotfiles  emacs bash'
+        docker exec test_container sh -c 'ls -a ~'
 
     - name: Install emacs packages
       run: |

@@ -1,12 +1,17 @@
 FROM docker.io/library/alpine:3.21
 
 RUN apk add --no-cache \
+    bats-core \
     coreutils-env \
     emacs-nox \
-    stow \
+    fish \
     git \
-    bats-core \
-    ncurses
+    ncurses \
+    py3-pip \
+    shellcheck \
+    stow
+
+RUN python -m pip install --break-system-packages toml-validator
 
 RUN adduser -D tester
 

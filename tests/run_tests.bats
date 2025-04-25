@@ -13,6 +13,21 @@ setup_file() {
       emacsclient -s test -e "(ace-window t)"
 }
 
+@test "valid TOML files" {
+      find . -name "*.toml" | xargs toml-validator
+}
+
+@test "shellcheck: no warnings for bash init scripts" {
+      echo -e "
+      $HOME/.bashrc
+      $HOME/.bash_profile
+      " | xargs shellcheck --shell bash --severity warning --exclude=1090
+}
+
+@test "fish: check syntax of .fish files" {
+    find -XL ~/.config -name '*.fish' | xargs -n 1 fish --no-execute
+}
+
 teardown_file() {
     # Kill the emacs daemon
     emacs --batch --exec "(progn (require 'server) (server-eval-at \"test\" '(kill-emacs)))"               
