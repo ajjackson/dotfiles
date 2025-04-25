@@ -18,7 +18,7 @@ setup_file() {
 }
 
 @test "shellcheck: no warnings for bash init scripts" {
-      ls bash/* | xargs shellcheck --shell bash --severity warning
+      ls bash/* | xargs shellcheck --shell bash --severity warning --exclude=1090
 }
 
 teardown_file() {

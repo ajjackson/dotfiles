@@ -1100,6 +1100,7 @@ needed any more.
 
 #+begin_src bash
   if [ -f $HOME/.modules ]; then
+      # shellcheck disable=SC2046
       module load $(cat $HOME/.modules)
   fi
 #+end_src
@@ -1167,7 +1168,7 @@ I'm just using slurm at the moment, but we can check if it is
 available before setting alias.
 
 #+BEGIN_SRC bash
-if test $(command -v squeue)
+if test "$(command -v squeue)"
 then
     alias myjob='squeue -u $USER'
 fi
@@ -1175,7 +1176,7 @@ fi
 
 ***** Shortcuts
 #+BEGIN_SRC bash
-  alias em=${EDITOR}
+  alias em='${EDITOR}'
   alias ll='ls -l'
   alias la='ls -a'
 #+END_SRC
@@ -1264,7 +1265,7 @@ Get git branch (Thanks to [[http://www.railstips.org/blog/archives/2009/02/02/be
 #+BEGIN_SRC bash
   function parse_git_branch {
         ref=$(git symbolic-ref HEAD 2> /dev/null) || return
-        echo " ("${ref#refs/heads/}")"
+        echo " (${ref#refs/heads/})"
     }
 
   RED="0;31m"
