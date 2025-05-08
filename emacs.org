@@ -619,6 +619,12 @@ better with interactive programs like btop.
   :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
+** utf-8
+Stop freaking out if a file specifies UTF-8 encoding in capitals:
+#+begin_src elisp
+  (define-coding-system-alias 'UTF-8 'utf-8)
+#+end_src
+
 ** Git
 I use Magit for 90% of Git stuff, and CLI for some troubleshooting.
 MELPA version has some dependency problems (needs a very new Emacs

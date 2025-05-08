@@ -1437,15 +1437,18 @@ Pretty barebones git config really
           autosquash = true
 #+END_SRC
 ** aliases
+- There are some nice ones at https://www.reddit.com/r/commandline/comments/wf7oju
+
 - =git lol= is a classic, found passed around the internet
   #+BEGIN_SRC conf :tangle git/dot-gitconfig
     [alias]
             lol = log --graph --decorate --pretty=oneline --abbrev-commit --all --color
-  #+END_SRC
-- Here are some nice ones from https://www.reddit.com/r/commandline/comments/wf7oju:
-  #+BEGIN_SRC conf :tangle git/dot-gitconfig
             pr = "!f() { git fetch --force origin pull/$1/head:pr-$1; }; f"
+
+            # If fzf is installed, this gives a nice interactive way to delete unwanted branches. Mark with TAB before finishing with RET.
+            rm-branches = !bash -cl 'echo $(git branch  | fzf -m) | xargs git branch -D'
   #+END_SRC
+
 
 * SSH
    :PROPERTIES:
