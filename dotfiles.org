@@ -793,6 +793,7 @@ string-split.
 #+begin_src fish
   if test -d /home/adam/.conda/envs/science
       # This is Arctopus, system Conda is in charge
+      set -x CONDA_EXE /usr/bin/conda
       eval conda "shell.fish" "hook" $argv | source
 
   else if test -d "$MAMBA_ROOT_PREFIX" -a -f "$MAMBA_EXE"
