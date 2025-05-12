@@ -828,6 +828,19 @@ included in this repository. I didn't write it so not much point
 having it in the literate file here. It is copied to .
 config/fish/functions
 
+*** just
+=just= is a pretty neat (and performant?) take on makefiles to provide
+project-specific aliases and functions.
+
+So far I don't have a global justfile.
+
+Enable fish completions.
+#+begin_src fish
+  if which just &> /dev/null
+      just --completions fish | source
+  end
+#+end_src
+
 *** zoxide
 #+begin_src fish
   if which zoxide &> /dev/null
@@ -1307,7 +1320,13 @@ Bash completion doesn't load automatically on a Mac if installed with Homebrew.
   done
 #+END_SRC
 
+Completion for =just=, if installed
 
+#+begin_src bash
+  if which just 2> /dev/null; then
+      just --completions bash > /tmp/just-bash-completion && source /tmp/just-bash-completion && rm /tmp/just-bash-completion
+  fi
+#+end_src
 
 * Tmux
    :PROPERTIES:
