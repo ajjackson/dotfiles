@@ -591,6 +591,27 @@ Apparently all the cool kids have moved from auto-complete to Company
 these days. Should probably look into LSP at the same time. Maybe I'll
 go without for a bit first...
 
+** Yasnippet
+
+This is a really nice customisable completion system. For now I am
+avoiding external packages full of completions. Let's keep it lean and
+personalised.
+
+#+begin_src elisp
+  (use-package yasnippet
+    :config (yas-global-mode 1))
+#+end_src
+
+*** Snippets
+#+begin_src conf :tangle "emacs/.emacs.d/snippets/python-mode/import_numpy" :mkdirp yes
+# -*- mode: snippet -*-
+# name: import numpy
+# key: <inp
+# --
+import numpy as np
+$0
+#+end_src
+
 * File management
 
 I used to lean heavily on [[https://github.com/sunrise-commander/sunrise-commander][sunrise-commander]], but haven't used it much
