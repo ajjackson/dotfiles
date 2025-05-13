@@ -1,5 +1,5 @@
 (progn
-  (find-file "test.py")
+  (find-file "tmp.py")
   (insert "<inp")
   (yas-expand)
   (cl-assert
@@ -10,3 +10,4 @@
   (set-buffer-modified-p nil)
   (kill-current-buffer)
   )
+
