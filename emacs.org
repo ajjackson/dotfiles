@@ -599,7 +599,11 @@ personalised.
 
 #+begin_src elisp
   (use-package yasnippet
-    :config (yas-global-mode 1))
+    :hook ((python-mode . yas-minor-mode))
+    :config
+    (yas-recompile-all)
+    (yas-reload-all)
+    )
 #+end_src
 
 *** Snippets
