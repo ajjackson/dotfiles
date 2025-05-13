@@ -607,13 +607,29 @@ personalised.
 #+end_src
 
 *** Snippets
-#+begin_src conf :tangle "emacs/.emacs.d/snippets/python-mode/import_numpy" :mkdirp yes
-# -*- mode: snippet -*-
-# name: import numpy
-# key: <inp
-# --
-import numpy as np
-$0
+#+begin_src conf :tangle "emacs/.emacs.d/snippets/python-mode/inp" :mkdirp yes
+  # -*- mode: snippet -*-
+  # name: inp
+  # key: <inp
+  # --
+  import numpy as np
+  $0
+#+end_src
+
+#+begin_src conf :tangle "emacs/.emacs.d/snippets/python-mode/iplt"
+  # -*- mode: snippet -*-
+  # name: iplt
+  # key: <iplt
+  # --
+  import matplotlib.pyplot as plt
+#+end_src
+
+#+begin_src conf :tangle "emacs/.emacs.d/snippets/python-mode/ipth"
+  # -*- mode: snippet -*-
+  # name: ipth
+  # key: <ipth
+  # --
+  from pathlib import Path
 #+end_src
 
 * File management
