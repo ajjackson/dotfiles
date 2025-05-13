@@ -3,6 +3,8 @@
 setup_file() {
     # One-time setup: start the emacs daemon
     emacs --daemon=test
+
+    export ELISP_TEST_DIR="$(dirname "$BATS_TEST_FILENAME")/elisp"
 }
 
 @test "magit available" {
@@ -11,6 +13,10 @@ setup_file() {
 
 @test "ace-window available" {
       emacsclient -s test -e "(ace-window t)"
+}
+
+@test "yasnippet" {
+      emacsclient -s test -e "(load \"${ELISP_TEST_DIR}/test-yasnippet.el\")"
 }
 
 teardown_file() {
