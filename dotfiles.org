@@ -1128,13 +1128,6 @@ know how to work with that so use screen-256color instead.
   fi
 #+end_src
 
-Compatibility fix for new versions of glibc with conda-forge emacs
-
-#+begin_src bash
-  export LD_PRELOAD=/usr/lib64/libc_malloc_debug.so.0
-#+end_src
-
-
 **** Appearance
 Check the window size after each command, updating LINES and COLUMNS
 as necessary. This is only worth doing for interactive sessions so we
