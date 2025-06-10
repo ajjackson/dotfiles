@@ -1316,7 +1316,7 @@ Bash completion doesn't load automatically on a Mac if installed with Homebrew.
 Completion for =just=, if installed
 
 #+begin_src bash
-  if which just 2> /dev/null; then
+  if which just &> /dev/null; then
       just --completions bash > /tmp/just-bash-completion && source /tmp/just-bash-completion && rm /tmp/just-bash-completion
   fi
 #+end_src
