@@ -660,6 +660,12 @@ better with interactive programs like btop.
   :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
   :END:
 
+** Flycheck initial setup
+Create a variable to collect flycheck mode hooks
+#+begin_src elisp
+  (setq imrae/flycheck-modes nil)
+#+end_src
+
 ** utf-8
 Stop freaking out if a file specifies UTF-8 encoding in capitals:
 #+begin_src elisp
@@ -777,10 +783,7 @@ If shellcheck and flycheck are available we can use these for
 checking Bash scripts.
 #+BEGIN_SRC elisp
   (if (executable-find "shellcheck")
-      (use-package flycheck
-        :hook ((sh-mode . flycheck-mode))
-        :bind (("M-n" . flycheck-next-error)
-               ("M-p" . flycheck-previous-error))))
+      (push 'sh-mode imrae/flycheck-modes))
 #+END_SRC
 
 ** Fish
@@ -852,13 +855,8 @@ If we have ruff, flycheck becomes viable
 
 #+begin_src elisp
   (if (executable-find "ruff")
-      (use-package flycheck
-        :hook ((python-mode . flycheck-mode))
-        :bind (("M-n" . flycheck-next-error)
-               ("M-p" . flycheck-previous-error)))
-    )
+      (push 'python-mode imrae/flycheck-modes))
 #+end_src
-
 
 *** Linting and formatters
 It is useful to call a linter directly from the file. I used to rely
@@ -985,6 +983,17 @@ The code lives in =~/.emacs.d/lisp=
   (provide 'gibbs2)
 #+end_src
 
+** flycheck
+#+begin_src elisp
+  (if imrae/flycheck-modes
+      (let ((hooks-list (mapcar (lambda (mode) (cons mode 'flycheck-mode)) imrae/flycheck-modes)))
+        (use-package flycheck
+          :hook hooks-list
+          :bind (("M-n" . flycheck-next-error)
+                 ("M-p" . flycheck-previous-error)))
+       )
+      )
+#+end_src
 
 * Pretty symbols
   :PROPERTIES:
@@ -1228,6 +1237,15 @@ Use org-superstar for nice symbols (successor to org-bullets)
        :hook (org-mode . (lambda () (org-superstar-mode 1)))
     )
 
+#+end_src
+
+Make LaTeX previews (enabled with C-c C-x C-l) a bit bigger than default
+
+#+begin_src elisp
+  (setq  org-format-latex-options
+         '(:foreground default :background default :scale 2.0
+           :html-foreground "Black" :html-background "Transparent"
+           :html-scale 1.0 :matchers ("begin" "$1" "$" "$$" "\\(" "\\[")))
 #+end_src
 
 ** Key bindings
