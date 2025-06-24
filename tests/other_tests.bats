@@ -14,3 +14,7 @@
 @test "fish: check syntax of .fish files" {
     find -XL ~/.config -name '*.fish' | xargs -n 1 fish --no-execute
 }
+
+@test "git: check git aliases have been added" {
+    git alias
+}
