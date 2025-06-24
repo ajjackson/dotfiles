@@ -1460,6 +1460,9 @@ Pretty barebones git config really
 
             # If fzf is installed, this gives a nice interactive way to delete unwanted branches. Mark with TAB before finishing with RET.
             rm-branches = !bash -cl 'echo $(git branch  | fzf -m) | xargs git branch -D'
+
+            # Show all aliases
+            alias = !bash -ci 'git config list | grep alias'
   #+END_SRC
 
 
