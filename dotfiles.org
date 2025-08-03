@@ -817,8 +817,9 @@ string-split.
   else if test -f "$MAMBA_EXE"
       $MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
   else if test -f "$CONDA_EXE"
+      # Probably some kind of stock Fedora so fish config is under /etc
       eval $CONDA_EXE "shell.fish" "hook" $argv | source
-      source $MAMBA_ROOT_PREFIX/etc/fish/conf.d/mamba.fish
+      source /etc/fish/conf.d/conda.fish
   end
 #+end_src
 
