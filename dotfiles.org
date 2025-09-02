@@ -808,13 +808,19 @@ string-split.
       # Micromamba unpacked in home directory, probably a VM or server
       set -x MAMBA_ROOT_PREFIX $HOME/micromamba
       set -x MAMBA_EXE (which micromamba)
+
+  else if test -d "$HOME/.local/share/mamba"
+      # Micromamba unpacked in .local, probably a VM or server
+      set -x MAMBA_ROOT_PREFIX $HOME/.local/share/mamba
+      set -x MAMBA_EXE (which micromamba)      
+
   end
 
   if test -d "$HOME/mambaforge"
       # Probably a macbook
       eval $CONDA_EXE "shell.fish" "hook" $argv | source
       source $MAMBA_ROOT_PREFIX/etc/fish/conf.d/mamba.fish
-  else if test -f "$MAMBA_EXE"
+  else if test -f "$MAMBA_EXE"  # For me, this is usually micromamba
       $MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
   else if test -f "$CONDA_EXE"
       # Probably some kind of stock Fedora so fish config is under /etc
@@ -1320,6 +1326,15 @@ Completion for =just=, if installed
   if which just &> /dev/null; then
       just --completions bash > /tmp/just-bash-completion && source /tmp/just-bash-completion && rm /tmp/just-bash-completion
   fi
+#+end_src
+
+
+**** Conda
+#+begin_src bash
+if type -P micromamba > /dev/null; then
+    export MAMBA_EXE=$(which micromamba)
+    eval "$(micromamba shell hook --shell bash)"
+fi
 #+end_src
 
 * Tmux
