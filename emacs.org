@@ -81,6 +81,9 @@ properly. I suppose when the other config bugs are sorted out here it
 may be worth opening a PR to fix it, but I'm not sure if there is anyone at
 "emacsorphanage" to accept bug fixes?
 
+We also demand that hydra is available at this stage, so we can use it
+in other package configurations.
+
 #+begin_src elisp
   (elpaca use-package)
   (elpaca-wait)
@@ -104,7 +107,11 @@ may be worth opening a PR to fix it, but I'm not sure if there is anyone at
   (use-package use-package-chords
     :demand t
     :config
-    (key-chord-mode 1))
+    (key-chord-mode 1)
+    (setq key-chord-typing-detection t))
+
+  (use-package hydra)
+
   (elpaca-wait)
 
 #+end_src
@@ -380,6 +387,7 @@ for the buffer menu.
   (global-set-key (kbd "C-x k") 'kill-current-buffer)
 #+END_SRC
 
+
 * Aliases
   :PROPERTIES:
   :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
@@ -436,6 +444,29 @@ for the buffer menu.
      (key-chord-define-global "xo" 'ace-window)
    #+END_SRC
 
+* Zoom
+Based on hydra docs and
+https://ericjmritz.wordpress.com/2015/10/14/some-personal-hydras-for-gnu-emacs/
+
+A little interactive mode for text size, opened with double-tap on
+"z". The letters correspond to the positions of +, - and 0 on my
+custom keyboard layers.
+
+  #+begin_src elisp
+    (use-package hydra
+      :config
+    (key-chord-define-global
+     "zz"
+     (defhydra hydra-zoom ()
+               "zoom"
+               ("+" text-scale-increase "in")
+               ("h" text-scale-increase "in")
+               ("-" text-scale-decrease "out")
+               ("k" text-scale-decrease "out")
+               ("j" (text-scale-adjust 0) "reset")
+               ("q" nil "quit" :color blue)))
+      )
+  #+end_src
 * Backups
   :PROPERTIES:
   :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
@@ -524,13 +555,37 @@ Avy provides some interesting commands for jumping around. An
 initial "search" brings up short keys which are used to jump to
 the desired match. Quicker than C-s when you are already looking
 at the work you want to jump to.
+
+I don't really use the default M-g bindings for much, let's try this
+[[https://ericjmritz.wordpress.com/2015/10/14/some-personal-hydras-for-gnu-emacs/][hydra from a blog post]] I've added "next-error" and "previous-error" as
+these are default bindings to n/p and are used with =org-occurs= as
+well as =M-x compile=, =M-x grep=. The hydra access is way more
+convenient than =C-x `=!
+
 #+BEGIN_SRC elisp
     (use-package avy
       :bind (("C-;" . avy-goto-word-or-subword-1)
-             ("C-'" . avy-goto-line)
+             ("M-g" . hydra-avy/body)
              )
-      :chords (("fg" . avy-goto-word-or-subword-1)
-               ("df" . avy-goto-line)))
+      :commands (hydra-avy/body)
+      :config
+      (use-package link-hint)
+      (defhydra hydra-avy (:color blue)
+        "avy-goto"
+        ("g" avy-goto-line "line")
+        ("c" avy-goto-char "char")
+        ("C" avy-goto-char-2 "char-2")
+        ("w" avy-goto-word-1 "word")
+        ("s" avy-goto-subword-1 "subword")
+        ("u" link-hint-open-link "open-URI")
+        ("U" link-hint-copy-link "copy-URI")
+        ;; Need to explicitly return to hydra or they escape...
+        ("n" (progn (next-error) (hydra-avy/body)) "next-error")
+        ("p" (progn (previous-error) (hydra-avy/body)) "previous-error")
+  )
+      (global-set-key (kbd "M-g") 'hydra-avy/body)
+      )
+
 #+END_SRC
 
 Ace-window is a less annoying way of changing window pane; if
@@ -541,6 +596,8 @@ enter.
     :bind (("C-x o" . ace-window))
     )
 #+END_SRC
+
+
 
 ** ripgrep
 The ripgrep package provides a really fast way to fly around fils
@@ -641,7 +698,6 @@ Still, it doesn't install nicely with package.el /or/ elpaca right
 now, so if I want to use it the answer is to clone to
 =~/.emacs.d/lisp=.  Maybe I can copy the bootstrap code from elpaca,
 but a better solution would be to figure out a way to elpaca it...
-
 
 * Shells
   :PROPERTIES:
@@ -1021,7 +1077,6 @@ really. For now we put some config here but activate manually with
                     '(("lambda" . ?λ)))))
 #+end_src
 
-
 * Remote servers
   :PROPERTIES:
   :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
@@ -1059,11 +1114,14 @@ them together.
     :config
     <<org-agenda()>>
     <<org-babel>>
+    <<org-hydra>>
     :bind
     <<org-bindings>>
     :hook
     (org-mode . org-indent-mode)
-    )
+    :chords
+    (("df" . hydra-org/body ))
+  )
 #+end_src
 
 ** Agenda
@@ -1250,18 +1308,12 @@ Make LaTeX previews (enabled with C-c C-x C-l) a bit bigger than default
 
 ** Key bindings
 
-As well as some useful agenda-related bindings, we override the
-org-mode keybinding for C-' (cycle through agenda files), to
-restore the more useful =avy-goto-line=.
-
 #+name: org-bindings
 #+begin_src elisp
   (("C-c l" . org-store-link)
    ("C-c a" . org-agenda)
    ("C-c t" . org-capture)
-   ("C-c b" . org-ido-switchb)
-   :map org-mode-map
-   ("C-'" . avy-goto-line))
+   ("C-c b" . org-ido-switchb))
 #+end_src
 
 ** Structure templates
@@ -1376,6 +1428,24 @@ https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
 
 #+RESULTS:
 
+
+
+** Navigation hydra
+From https://ericjmritz.wordpress.com/2015/10/14/some-personal-hydras-for-gnu-emacs
+
+This encourages some features I don't use much: org-goto, and then in
+turn org-occur.
+
+#+begin_src elisp :tangle "emacs/.emacs.d/init.el" :noweb-ref org-hydra
+  (defhydra hydra-org (:color red :columns 3)
+    "Org Mode Movements"
+    ("n" outline-next-visible-heading "next heading")
+    ("p" outline-previous-visible-heading "prev heading")
+    ("N" org-forward-heading-same-level "next heading at same level")
+    ("P" org-backward-heading-same-level "prev heading at same level")
+    ("u" outline-up-heading "up heading")
+    ("g" org-goto "goto" :exit t))
+#+end_src
 
 * Citation
 :PROPERTIES:
