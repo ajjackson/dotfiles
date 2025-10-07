@@ -1331,10 +1331,11 @@ Completion for =just=, if installed
 
 **** Conda
 #+begin_src bash
-if type -P micromamba > /dev/null; then
-    export MAMBA_EXE=$(which micromamba)
-    eval "$(micromamba shell hook --shell bash)"
-fi
+  if type -P micromamba > /dev/null; then
+      MAMBA_EXE=$(which micromamba)
+      export MAMBA_EXE
+      eval "$(micromamba shell hook --shell bash)"
+  fi
 #+end_src
 
 * Tmux
