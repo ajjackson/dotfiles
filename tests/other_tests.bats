@@ -15,6 +15,10 @@
     find -XL ~/.config -name '*.fish' | xargs -n 1 fish --no-execute
 }
 
+@test "fish config: check indentation and quoting" {
+    fish_indent ~/.config/fish/config.fish | diff - ~/.config/fish/config.fish
+}
+
 @test "git: check git aliases have been added" {
     git alias
 }
