@@ -741,8 +741,8 @@ export relevant variables.
 #+begin_src fish
   set MY_CHICKEN_REPOSITORY $HOME/opt/eggs/lib/chicken/5
   if test -d $MY_CHICKEN_REPOSITORY
-    set -x CHICKEN_INSTALL_REPOSITORY $MY_CHICKEN_REPOSITORY
-    set -x CHICKEN_REPOSITORY_PATH $MY_CHICKEN_REPOSITORY
+      set -x CHICKEN_INSTALL_REPOSITORY $MY_CHICKEN_REPOSITORY
+      set -x CHICKEN_REPOSITORY_PATH $MY_CHICKEN_REPOSITORY
   end
 #+end_src
 
@@ -794,7 +794,7 @@ string-split.
   if test -d /home/adam/.conda/envs/science
       # This is Arctopus, system Conda is in charge
       set -x CONDA_EXE /usr/bin/conda
-      eval conda "shell.fish" "hook" $argv | source
+      eval conda "shell.fish" hook $argv | source
 
   else if test -d "$MAMBA_ROOT_PREFIX" -a -f "$MAMBA_EXE"
       # Mamba path already configured, this is probably a mambaorg/micromamba container
@@ -812,19 +812,19 @@ string-split.
   else if test -d "$HOME/.local/share/mamba"
       # Micromamba unpacked in .local, probably a VM or server
       set -x MAMBA_ROOT_PREFIX $HOME/.local/share/mamba
-      set -x MAMBA_EXE (which micromamba)      
+      set -x MAMBA_EXE (which micromamba)
 
   end
 
   if test -d "$HOME/mambaforge"
       # Probably a macbook
-      eval $CONDA_EXE "shell.fish" "hook" $argv | source
+      eval $CONDA_EXE "shell.fish" hook $argv | source
       source $MAMBA_ROOT_PREFIX/etc/fish/conf.d/mamba.fish
-  else if test -f "$MAMBA_EXE"  # For me, this is usually micromamba
+  else if test -f "$MAMBA_EXE" # For me, this is usually micromamba
       $MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
   else if test -f "$CONDA_EXE"
       # Probably some kind of stock Fedora so fish config is under /etc
-      eval $CONDA_EXE "shell.fish" "hook" $argv | source
+      eval $CONDA_EXE "shell.fish" hook $argv | source
       source /etc/fish/conf.d/conda.fish
   end
 #+end_src
@@ -843,14 +843,14 @@ So far I don't have a global justfile.
 
 Enable fish completions.
 #+begin_src fish
-  if which just &> /dev/null
+  if which just &>/dev/null
       just --completions fish | source
   end
 #+end_src
 
 *** zoxide
 #+begin_src fish
-  if which zoxide &> /dev/null
+  if which zoxide &>/dev/null
       zoxide init fish | source
   end
 #+end_src
@@ -867,12 +867,12 @@ If environment modules are installed:
 
 #+begin_src fish
   if test -f /usr/share/Modules/init/fish
-    source /usr/share/Modules/init/fish
-    set -xp MODULEPATH $HOME/.local/modulefiles
+      source /usr/share/Modules/init/fish
+      set -xp MODULEPATH $HOME/.local/modulefiles
 
-    if test -f $HOME/.modules
-      module load (cat $HOME/.modules | string split -n " ")
-    end
+      if test -f $HOME/.modules
+          module load (cat $HOME/.modules | string split -n " ")
+      end
   end
 #+end_src
 
@@ -1543,7 +1543,7 @@ as the git command to upload Mantid test data.
 
   if test -f "$HOME/.config/nnn/plugins/nuke"
       set -x NNN_OPENER "$HOME/.config/nnn/plugins/nuke"
-      set -x NNN_OPTS "c"
+      set -x NNN_OPTS c
   end
 
 #+end_src
