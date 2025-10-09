@@ -65,6 +65,9 @@ Instructions
   I was using a fork to get around this but it was more trouble than
   it was worth; for now, we use the mainline stow again.
 
+  Since stow 2.4 this is fixed, once that has a chance to hit package
+  managers maybe we can use it again :-D
+
 Containers
 ==========
 
