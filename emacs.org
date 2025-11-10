@@ -387,6 +387,19 @@ for the buffer menu.
   (global-set-key (kbd "C-x k") 'kill-current-buffer)
 #+END_SRC
 
+** Zoxide
+This zoxide package looks pretty nice but I don't fully understand all the functions...
+https://github.com/emacsmirror/zoxide
+
+=zoxide-find-file= seems a worthy contender for the precious =C-c C-f=
+binding, while not quite a drop-in for =C-x C-f=. (It creates a
+two-step process of finding the directory and then the file; it's fine
+really but different workflow/muscle-memory!)
+
+#+begin_src elisp
+  (use-package zoxide
+    :bind (("C-c C-f" . zoxide-find-file)))
+#+end_src
 
 * Aliases
   :PROPERTIES:
@@ -907,6 +920,11 @@ Line number is also useful
   (add-hook 'python-mode-hook 'display-line-numbers-mode)
 #+end_src
 
+Eldoc is not (for now, anyway); clear this binding to use with zoxide instead.
+#+begin_src elisp
+  (add-hook 'python-mode-hook (lambda () (keymap-unset python-mode-map "C-c C-f")))
+#+end_src
+
 If we have ruff, flycheck becomes viable
 
 #+begin_src elisp
@@ -1115,6 +1133,8 @@ them together.
     <<org-agenda()>>
     <<org-babel>>
     <<org-hydra>>
+    ;; Remove this annoying shortcut that takes priority over my zoxide search.
+    (keymap-unset org-mode-map "C-c C-f")
     :bind
     <<org-bindings>>
     :hook
@@ -1310,10 +1330,13 @@ Make LaTeX previews (enabled with C-c C-x C-l) a bit bigger than default
 
 #+name: org-bindings
 #+begin_src elisp
-  (("C-c l" . org-store-link)
-   ("C-c a" . org-agenda)
-   ("C-c t" . org-capture)
-   ("C-c b" . org-ido-switchb))
+    (("C-c l" . org-store-link)
+     ("C-c a" . org-agenda)
+     ("C-c t" . org-capture)
+     ("C-c b" . org-ido-switchb)
+     ("C-c C-f" . zoxide-find-file)  ;; overriding org-mode default!
+  )
+
 #+end_src
 
 ** Structure templates
