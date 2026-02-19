@@ -473,9 +473,9 @@ custom keyboard layers.
      (defhydra hydra-zoom ()
                "zoom"
                ("+" text-scale-increase "in")
-               ("h" text-scale-increase "in")
+               ("k" text-scale-increase "in")
                ("-" text-scale-decrease "out")
-               ("k" text-scale-decrease "out")
+               ("h" text-scale-decrease "out")
                ("j" (text-scale-adjust 0) "reset")
                ("q" nil "quit" :color blue)))
       )
