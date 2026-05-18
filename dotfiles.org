@@ -724,14 +724,35 @@ corresponding section of Bash config for more info.
   if status is-interactive
       # Commands to run in interactive sessions can go here
 
-      if test -f "/usr/lib64/libc_malloc_debug.so.0"
-          set -x EDITOR="LD_PRELOAD=/usr/lib64/libc_malloc_debug.so.0 emacsclient -t"
-      else
-          set -x EDITOR "emacsclient -t"
+      set -x ALTERNATE_EDITOR ''
+
+      function em
+          set -l PRELOAD_LIB /usr/lib/libc_malloc_debug.so
+          set -l EC_ARGS -t
+
+          if set -q INSIDE_EMACS
+              and not set -q EMACS_SERVER_NAME
+              echo "em: EMACS_SERVER_NAME not set" >&2
+              return 1
+          end
+
+          if set -q EMACS_SERVER_NAME
+              set -a EC_ARGS -s $EMACS_SERVER_NAME
+          end
+
+          if set -q INSIDE_EMACS
+              set -a EC_ARGS -n
+          end
+
+          if test -e $PRELOAD_LIB
+              env LD_PRELOAD=$PRELOAD_LIB emacsclient $EC_ARGS $argv
+          else
+              emacsclient $EC_ARGS $argv
+          end
       end
 
-      set -x ALTERNATE_EDITOR ''
-      alias em $EDITOR
+      set -x EDITOR em
+
   end
 #+end_src
 
