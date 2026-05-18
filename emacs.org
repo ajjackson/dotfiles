@@ -25,44 +25,44 @@ bad-dependencies-MELPA package...)
 This is the boilerplate to install elpaca if unavailable and configure it:
 
 #+begin_src elisp
-(defvar elpaca-installer-version 0.11)
-(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1 :inherit ignore
-                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-       (build (expand-file-name "elpaca/" elpaca-builds-directory))
-       (order (cdr elpaca-order))
-       (default-directory repo))
-  (add-to-list 'load-path (if (file-exists-p build) build repo))
-  (unless (file-exists-p repo)
-    (make-directory repo t)
-    (when (<= emacs-major-version 28) (require 'subr-x))
-    (condition-case-unless-debug err
-        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                  ,@(when-let* ((depth (plist-get order :depth)))
-                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                  ,(plist-get order :repo) ,repo))))
-                  ((zerop (call-process "git" nil buffer t "checkout"
-                                        (or (plist-get order :ref) "--"))))
-                  (emacs (concat invocation-directory invocation-name))
-                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                  ((require 'elpaca))
-                  ((elpaca-generate-autoloads "elpaca" repo)))
-            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-          (error "%s" (with-current-buffer buffer (buffer-string))))
-      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-  (unless (require 'elpaca-autoloads nil t)
-    (require 'elpaca)
-    (elpaca-generate-autoloads "elpaca" repo)
-    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
-(add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
+  (defvar elpaca-installer-version 0.12)
+  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+  (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
+  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                                :ref nil :depth 1 :inherit ignore
+                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                                :build (:not elpaca-activate)))
+  (let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
+         (build (expand-file-name "elpaca/" elpaca-builds-directory))
+         (order (cdr elpaca-order))
+         (default-directory repo))
+    (add-to-list 'load-path (if (file-exists-p build) build repo))
+    (unless (file-exists-p repo)
+      (make-directory repo t)
+      (when (<= emacs-major-version 28) (require 'subr-x))
+      (condition-case-unless-debug err
+          (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                    ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                    ,@(when-let* ((depth (plist-get order :depth)))
+                                                        (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                    ,(plist-get order :repo) ,repo))))
+                    ((zerop (call-process "git" nil buffer t "checkout"
+                                          (or (plist-get order :ref) "--"))))
+                    (emacs (concat invocation-directory invocation-name))
+                    ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                          "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                    ((require 'elpaca))
+                    ((elpaca-generate-autoloads "elpaca" repo)))
+              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+            (error "%s" (with-current-buffer buffer (buffer-string))))
+        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+    (unless (require 'elpaca-autoloads nil t)
+      (require 'elpaca)
+      (elpaca-generate-autoloads "elpaca" repo)
+      (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+  (add-hook 'after-init-hook #'elpaca-process-queues)
+  (elpaca `(,@elpaca-order))
 #+end_src
 
 #+RESULTS:
@@ -86,6 +86,7 @@ in other package configurations.
 
 #+begin_src elisp
   (elpaca use-package)
+  (elpaca compat)
   (elpaca-wait)
 
   (elpaca elpaca-use-package
@@ -100,17 +101,18 @@ in other package configurations.
     :custom
     (use-package-verbose nil)
     (use-package-compute-statistics nil)
-    (use-package-always-defer t)
+    ;;(use-package-always-defer t)
     (use-package-expand-minimally t)
     (use-package-enable-imenu-support t))
 
   (use-package use-package-chords
+    :ensure t
     :demand t
     :config
     (key-chord-mode 1)
     (setq key-chord-typing-detection t))
 
-  (use-package hydra)
+  (use-package hydra :ensure t :demand t)
 
   (elpaca-wait)
 
@@ -131,6 +133,15 @@ packages that aren't managed with elpaca. (i.e. experiments or simple personal p
 
 #+begin_src elisp
   (add-to-list 'load-path "~/.emacs.d/lisp")
+#+end_src
+
+Set up a server for emacsclient and export the name to subshells so we
+can find it from terminals (instead of opening a sub-emacs!)
+#+begin_src elisp
+  (require 'server)
+  (unless (server-running-p)
+    (server-start))
+  (setenv "EMACS_SERVER_NAME" server-name)
 #+end_src
 
 * Appearance
@@ -246,7 +257,8 @@ the macro does not run until the inner function has been evaluated.
             ("Angel" . solarized)
             ("ajj-mbp-1" . solarized)
             ("scpc041.esc.rl.ac.uk" . tango-dark)
-            ("Arctopus" . deeper-blue)))
+            ("Arctopus" . deeper-blue)
+            ("SCMAC-49K2RN" . birds-of-paradise-plus)))
          (preferred-theme
           (cdr (assoc system-name system-preferred-themes)))
          )
@@ -263,7 +275,19 @@ the macro does not run until the inner function has been evaluated.
         )
       )
 
-     ;; ;; If not solarized, load by name
+     ;; Install birds of paradise if necessary, load,
+     ;; then set a darker chocolate brown background
+     ;; to match the iTerm theme
+     ((equal preferred-theme 'birds-of-paradise-plus)
+      (progn
+        (use-package birds-of-paradise-plus-theme :ensure t :demand t)
+        (elpaca-wait)
+        (load-theme 'birds-of-paradise-plus t)
+        (set-background-color "#352927")
+        )
+      )
+
+     ;; ;; Otherwise, load by name
      (preferred-theme (load-theme preferred-theme t))
 
      ;; Fall back to a nice theme if none specified
@@ -295,6 +319,7 @@ to do much.)
 #+BEGIN_SRC elisp
   (use-package smart-mode-line
     :ensure t
+    :demand t
     :config
     (setq sml/theme 'dark)
     (setq sml/no-confirm-load-theme t)
@@ -305,6 +330,8 @@ to do much.)
 a block of text; I find this less disorientating.
 #+BEGIN_SRC elisp
   (use-package volatile-highlights
+    :ensure t
+    :commands (volatile-highlights-mode)
     :config
     (volatile-highlights-mode t))
 #+END_SRC
@@ -315,10 +342,11 @@ a block of text; I find this less disorientating.
   :END:
 Workstations get a bit more bling than servers.
 
-
 Indicating your line number with a flying cat is the most Emacs thing ever
 #+BEGIN_SRC elisp
   (use-package nyan-mode
+    :ensure t
+    :commands (nyan-mode)
     :config
     (nyan-mode))
 #+END_SRC
@@ -328,6 +356,8 @@ need the top bar any more.
 
 #+BEGIN_SRC elisp
   (use-package hamburger-menu
+    :demand t
+    :ensure t
     :config
     (setq mode-line-front-space 'hamburger-menu-mode-line)
     (menu-bar-mode -1))
@@ -466,20 +496,26 @@ A little interactive mode for text size, opened with double-tap on
 custom keyboard layers.
 
   #+begin_src elisp
-    (use-package hydra
-      :config
+    (use-package hydra :ensure t)
+    (elpaca-wait)
+
     (key-chord-define-global
      "zz"
      (defhydra hydra-zoom ()
-               "zoom"
-               ("+" text-scale-increase "in")
-               ("k" text-scale-increase "in")
-               ("-" text-scale-decrease "out")
-               ("h" text-scale-decrease "out")
-               ("j" (text-scale-adjust 0) "reset")
-               ("q" nil "quit" :color blue)))
-      )
+       "zoom"
+       ("+" text-scale-increase "in")
+       ("k" text-scale-increase "in")
+       ("-" text-scale-decrease "out")
+       ("h" text-scale-decrease "out")
+       ("j" (text-scale-adjust 0) "reset")
+       ("q" nil "quit" :color blue)))
+
   #+end_src
+
+This still doesn't seem to load properly. Anyway, we should use
+global-text-scale-adjust instead, which was added in Emacs 29 and
+includes the modeline and minibuffer.
+
 * Backups
   :PROPERTIES:
   :header-args: :tangle "emacs/.emacs.d/init.el" :mkdirp yes
@@ -506,6 +542,8 @@ enabling ivy-mode. We also turn off ido-mode here, as it's annoying
 when =C-j= does the wrong thing.
 #+BEGIN_SRC elisp
   (use-package ivy
+      :ensure t
+      :demand t
       :config
       (ivy-mode)
       (setq ivy-use-virtual-buffers t)
@@ -560,6 +598,7 @@ All-the-icons adds pretty pictures to everything.
 
 #+BEGIN_SRC elisp
   (use-package all-the-icons-ivy
+    :commands (all-the-icons-ivy-setup)
     :config (all-the-icons-ivy-setup))
 #+END_SRC
 
@@ -577,12 +616,13 @@ convenient than =C-x `=!
 
 #+BEGIN_SRC elisp
     (use-package avy
+      :ensure t
       :bind (("C-;" . avy-goto-word-or-subword-1)
              ("M-g" . hydra-avy/body)
              )
       :commands (hydra-avy/body)
       :config
-      (use-package link-hint)
+      (use-package link-hint :ensure t :demand t)
       (defhydra hydra-avy (:color blue)
         "avy-goto"
         ("g" avy-goto-line "line")
@@ -606,6 +646,8 @@ there are more then two, you are given a choice of numbers to
 enter.
 #+BEGIN_SRC elisp
   (use-package ace-window
+    :ensure t
+    :commands (ace-window)
     :bind (("C-x o" . ace-window))
     )
 #+END_SRC
@@ -622,8 +664,10 @@ the menu; so if it's missing, try evaluating that expression again.
 
 #+begin_src elisp
   (use-package rg
-    :init (rg-enable-default-bindings)
+    :ensure t
+    :demand t
     :config
+    (rg-enable-default-bindings)
     (defun search-notes (regex) (interactive "sregex: ") (rg regex "*.org" "~/org"))
     (rg-menu-transient-insert "Search" "n" "notes" 'search-notes)
     )
@@ -669,6 +713,8 @@ personalised.
 
 #+begin_src elisp
   (use-package yasnippet
+    :ensure t
+    :demand t
     :hook ((python-mode . yas-minor-mode))
     :config
     (yas-recompile-all)
@@ -721,7 +767,7 @@ vterm is a more "native" shell from emacs; it should be fast and work
 better with interactive programs like btop.
 
 #+begin_src elisp
-  (use-package vterm :ensure t)
+  (use-package vterm :ensure t :commands (vterm))
 #+end_src
 
 * Programming languages and syntax highlighting
@@ -746,13 +792,16 @@ I use Magit for 90% of Git stuff, and CLI for some troubleshooting.
 MELPA version has some dependency problems (needs a very new Emacs
 maybe?) so pin a stable version from source.
     #+BEGIN_SRC elisp
-      (use-package transient
-        ;; :ensure (:host github :repo "magit/transient" :tag "v0.4.3")
-        )
+       (use-package transient
+        :ensure (:host github :repo "magit/transient" :tag "v0.13.3")
+        :demand t
+         )
 
       (use-package magit
-        ;; :ensure (:host github :repo "magit/magit" :tag "v3.3.0")
-        :chords (("dg" . magit-status)))
+      ;;  :ensure t
+       :ensure (:host github :repo "magit/magit" :tag "v4.5.0")
+       :demand t
+       :chords (("dg" . magit-status)))
     #+END_SRC
 
 We can highlight changes in the "gutters" with a few more packages.
@@ -760,17 +809,19 @@ The "fringe" version is nicer as it doesn't clash with e.g. linum mode
 -- but it only works in graphical sessions.
 
 #+begin_src elisp
-    (use-package git-gutter
-      :hook (prog-mode . git-gutter-mode)
-      :config (setq git-gutter:update-interval 0.1))
-    (use-package git-gutter-fringe
-      :if  (display-graphic-p))
+;;    (use-package git-gutter
+;;      :hook (prog-mode . git-gutter-mode)
+;;      :config (setq git-gutter:update-interval 0.1))
+;;    (use-package git-gutter-fringe
+;;      :if  (display-graphic-p))
 #+end_src
 
 ** Elisp
 Aggressive indent means you don't have to think about indentation.
 #+BEGIN_SRC elisp
   (use-package aggressive-indent
+    :ensure t
+    :commands (aggressive-indent-mode)
     :hook (emacs-lisp-mode . aggressive-indent-mode))
 #+END_SRC
 
@@ -779,6 +830,8 @@ directly edit the Lisp abstract syntax tree.
 
 #+BEGIN_SRC elisp
     (use-package paredit
+      :ensure t
+      :demand t
       :hook ((emacs-lisp-mode . paredit-mode)
              (emacs-lisp-mode . (lambda () (electric-pair-local-mode -1)))
              ))
@@ -860,12 +913,12 @@ I've been using the fish shell lately and really like it. Fish-mode
 gets syntax highlighting to work.
 #+begin_src elisp
   (if (executable-find "fish")
-      (use-package fish-mode))
+      (use-package fish-mode :ensure t :commands (fish-mode)))
 #+end_src
 
 ** Snakemake
 #+begin_src elisp
-(use-package snakemake-mode :ensure t)
+(use-package snakemake-mode :ensure t :commands (snakemake-mode))
 #+end_src
 
 
@@ -886,6 +939,8 @@ First some global things
 Now set up python-mode
 #+BEGIN_SRC elisp
   (use-package python-mode
+    :ensure t
+    :demand t
     :config
     (setq py-smart-indentation t)
     (setq python-shell-interpreter "python3")
@@ -932,6 +987,10 @@ If we have ruff, flycheck becomes viable
       (push 'python-mode imrae/flycheck-modes))
 #+end_src
 
+This doesn't seem to always work. To troubleshoot, check binary was
+found with flycheck-verify-checker and if not set the variable
+flycheck-python-ruff-executable.
+
 *** Linting and formatters
 It is useful to call a linter directly from the file. I used to rely
 on the =flake8= function which seems to have vanished, but
@@ -960,6 +1019,7 @@ selected region.
 #+begin_src elisp
   (use-package python-black
     :ensure t
+    :demand t
     :init
     (setq
      python-black-command "~/.condax/black/bin/black"
@@ -1062,6 +1122,8 @@ The code lives in =~/.emacs.d/lisp=
   (if imrae/flycheck-modes
       (let ((hooks-list (mapcar (lambda (mode) (cons mode 'flycheck-mode)) imrae/flycheck-modes)))
         (use-package flycheck
+        :ensure t
+        :demand t
           :hook hooks-list
           :bind (("M-n" . flycheck-next-error)
                  ("M-p" . flycheck-previous-error)))
@@ -1311,7 +1373,9 @@ Make a pretty arrow instead of ellipsis for expandable headlines.
 Use org-superstar for nice symbols (successor to org-bullets)
 #+begin_src elisp :tangle (if-workstation "emacs/.emacs.d/init.el" "no")
   (use-package org-superstar
+       :ensure t
        :after org
+       :commands (org-superstar-mode)
        :hook (org-mode . (lambda () (org-superstar-mode 1)))
     )
 
@@ -1354,6 +1418,8 @@ Org-present is a handy mode for simple presentations from an org outline
 
 #+begin_src elisp :tangle (if-workstation "emacs/.emacs.d/init.el" "no")
   (use-package org-present
+    :ensure t
+    :demand t
     :hook
     ((org-present-mode .
                        (lambda ()
@@ -1384,6 +1450,8 @@ https://systemcrafters.net/build-a-second-brain-in-emacs/keep-a-journal/
   (make-directory org-roam-directory t)
 
   (use-package org-roam
+    :ensure (:host github :repo "org-roam/org-roam" :tag "v2.3.0")
+    ;; :ensure t
     :demand t
     :bind (("C-c n l" . org-roam-buffer-toggle)
            ("C-c n f" . org-roam-node-find)
@@ -1480,6 +1548,8 @@ Use citar to insert citations from system-wide bibtex file
 
 #+begin_src elisp
   (use-package citar
+    :ensure t
+    :demand t
     :config
     (setq org-cite-insert-processor 'citar)
     (setq org-cite-follow-processor 'citar)
@@ -1488,7 +1558,9 @@ Use citar to insert citations from system-wide bibtex file
     (require 'citar-format)
     (require 'citar)
     (require 'citar-org)
-    )
+     )
+
+  ;; (use-package citar-org :ensure t :demand t)
 #+end_src
 
 ** Zotero links
@@ -1586,6 +1658,11 @@ Borrowing some bits from https://www.riccardopinosio.com/blog/posts/zotero_notes
 #+end_src
 
 * Cleanup
+Things seem to be a bit janky at the moment unless I run sml/setup again
+#+begin_src elisp  :tangle "emacs/.emacs.d/init.el" :mkdirp yes
+  (sml/setup)
+#+end_src
+
 If use-package configs don't seem to be launching, try putting this
 code above a suspicious part of the config and see if everything above
 that point comes back to life...
