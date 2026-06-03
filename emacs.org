@@ -22,6 +22,30 @@ allows us to install from arbitrary Git commits. (But it didn't work
 when I tried it with =paperless=, the aforementioned
 bad-dependencies-MELPA package...)
 
+First a hack which can hopefully be dropped soon: recently Elpaca
+seems to be using the new (Emacs 30) 'sort' which has fewer mandatory
+args and uses a smart comparison function which is also new to Emacs 30.
+Backport these so Elpaca works. (I raised an [[https://github.com/progfolio/elpaca/issues/550][Issue]] as well.)
+#+begin_src elisp
+
+(unless (fboundp 'value<)
+  (defun value< (a b)
+    (cond
+     ((and (numberp a) (numberp b)) (< a b))
+     ((and (stringp a) (stringp b)) (string< a b))
+     ((and (symbolp a) (symbolp b))
+      (string< (symbol-name a) (symbol-name b)))
+     (t (string< (format "%s" a)
+                 (format "%s" b))))))
+
+;; Setup default argument for sort on older Emacs
+(when (< emacs-major-version 30)
+  (advice-add 'sort :around
+              (lambda (orig list &optional pred)
+                (funcall orig list (or pred #'value<)))))
+
+#+end_src
+
 This is the boilerplate to install elpaca if unavailable and configure it:
 
 #+begin_src elisp
