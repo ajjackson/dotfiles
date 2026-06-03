@@ -163,6 +163,8 @@ Set up a server for emacsclient and export the name to subshells so we
 can find it from terminals (instead of opening a sub-emacs!)
 #+begin_src elisp
   (require 'server)
+  (if (display-graphic-p)
+      (setq server-name "gui-server"))
   (unless (server-running-p)
     (server-start))
   (setenv "EMACS_SERVER_NAME" server-name)
