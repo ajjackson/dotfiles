@@ -720,39 +720,47 @@ colors:
 
 Emacs can require a workaround to deal with glibc incompatibility; see
 corresponding section of Bash config for more info.
+#+begin_src fish :tangle "fish/.local/bin/em_wrap" :mkdirp yes :shebang "#! /usr/bin/env fish"
+  set -x ALTERNATE_EDITOR ''
+
+  function em
+      set -l PRELOAD_LIB /usr/lib/libc_malloc_debug.so
+      set -l EC_ARGS
+
+      if set -q INSIDE_EMACS
+          and not set -q EMACS_SERVER_NAME
+          echo "em: EMACS_SERVER_NAME not set" >&2
+          return 1
+      end
+
+      if set -q EMACS_SERVER_NAME
+          set -a EC_ARGS -s $EMACS_SERVER_NAME
+      end
+
+      if not set -q INSIDE_EMACS
+          if isatty stdin
+              set -a EC_ARGS -t
+          else
+              set -a EC_ARGS -c  # GUI frame fallback
+          end
+      end
+
+      if test -e $PRELOAD_LIB
+          env LD_PRELOAD=$PRELOAD_LIB emacsclient $EC_ARGS $argv
+      else
+          emacsclient $EC_ARGS $argv
+      end
+  end
+
+  em $argv
+#+end_src
+
 #+begin_src fish
   if status is-interactive
       # Commands to run in interactive sessions can go here
 
-      set -x ALTERNATE_EDITOR ''
-
-      function em
-          set -l PRELOAD_LIB /usr/lib/libc_malloc_debug.so
-          set -l EC_ARGS -t
-
-          if set -q INSIDE_EMACS
-              and not set -q EMACS_SERVER_NAME
-              echo "em: EMACS_SERVER_NAME not set" >&2
-              return 1
-          end
-
-          if set -q EMACS_SERVER_NAME
-              set -a EC_ARGS -s $EMACS_SERVER_NAME
-          end
-
-          if set -q INSIDE_EMACS
-              set -a EC_ARGS -n
-          end
-
-          if test -e $PRELOAD_LIB
-              env LD_PRELOAD=$PRELOAD_LIB emacsclient $EC_ARGS $argv
-          else
-              emacsclient $EC_ARGS $argv
-          end
-      end
-
-      set -x EDITOR em
-
+      set -x EDITOR ~/.local/bin/em_wrap
+      alias em ~/.local/bin/em_wrap
   end
 #+end_src
 
