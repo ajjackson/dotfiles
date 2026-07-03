@@ -28,7 +28,7 @@ probabably needs to authorise this with 'y'.
               ('t nil)))
 
   (defmacro if-workstation (arg1 arg2)
-    `(if (member ,system '("Arctopus" "scpc041" "ajj-mbp-1" "SCLT452Mac" "SCMAC-49K2RN"))
+    `(if (member ,system '("Arctopus" "scpc041" "ajj-mbp-1" "SCLT452Mac" "SCMAC-49K2RN", "toolbx"))
          ,arg1 ,arg2))
 #+end_src
 
