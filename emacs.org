@@ -1179,7 +1179,7 @@ few features so is implemented as a package.
 Activating this and setting up familiar keybinding from python-mode
 
 #+begin_src elisp
-(use-package my-ruff) ;; loaded from .emacs.d/lisp
+(require 'my-ruff) ;; loaded from .emacs.d/lisp
 
 (with-eval-after-load 'python-mode
   (define-key python-mode-map (kbd "C-c C-v") #'my/ruff-check-buffer))
