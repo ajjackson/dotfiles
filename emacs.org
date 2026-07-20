@@ -570,6 +570,7 @@ when =C-j= does the wrong thing.
   (use-package ivy
       :ensure t
       :demand t
+      :bind (("C-x b" . ivy-switch-buffer))
       :config
       (ivy-mode)
       (setq ivy-use-virtual-buffers t)
@@ -581,6 +582,20 @@ when =C-j= does the wrong thing.
             (lambda () (ivy-mode 1)))
 
 #+END_SRC
+
+When ivy-switch-buffer is unsuitable I might bring up the whole buffer
+list and search for something. This function streamlines that workflow:
+#+BEGIN_SRC elisp
+  (defun list-buffers-and-search ()
+    (interactive)
+    (list-buffers)
+    (select-window (get-buffer-window "*Buffer List*" 0))
+    (swiper)
+    )
+
+  (global-set-key (kbd "C-x C-b") 'list-buffers-and-search)
+#+END_SRC
+
 
 Counsel sets up a bunch of ivy-completion functions. It also
 provides Swiper, a fancy isearch.
@@ -594,26 +609,11 @@ than the usual switch-buffer.
 
   (use-package counsel
     :ensure t
-    :bind (("C-x b" . counsel-buffer-or-recentf))
     :config
     (counsel-mode)
     )
 #+END_SRC
 
-But, infuriatingly, it excludes *Scratch*, *Messages* etc. So to
-access those I use list-buffers and then shuffle around a bit. To save
-some keystrokes, let's automate the usual workflow.
-
-#+BEGIN_SRC elisp
-  (defun list-buffers-and-search ()
-    (interactive)
-    (list-buffers)
-    (select-window (get-buffer-window "*Buffer List*" 0))
-    (swiper)
-    )
-
-  (global-set-key (kbd "C-x C-b") 'list-buffers-and-search)
-#+END_SRC
 
 All-the-icons adds pretty pictures to everything.
 
