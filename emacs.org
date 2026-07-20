@@ -1060,119 +1060,118 @@ with ruff, as this _also_ seems to have been killed off. It gained a
 few features so is implemented as a package.
 
 #+begin_src elisp :tangle "emacs/.emacs.d/lisp/my-ruff.el" :mkdirp yes
-;;; my-ruff.el --- Simple Ruff integration via compilation-mode -*- lexical-binding: t; -*-
+  ;;; my-ruff.el --- Simple Ruff integration via compilation-mode -*- lexical-binding: t; -*-
 
-(require 'compile)
-(require 'thingatpt)
-(require 'browse-url)
+  (require 'compile)
+  (require 'thingatpt)
+  (require 'browse-url)
 
-;; --- Custom regexp for Ruff ---
-(add-to-list 'compilation-error-regexp-alist-alist
-             '(ruff
-               "^[[:space:]]*--?>[[:space:]]*\\([^:\n]+\\):\\([0-9]+\\):\\([0-9]+\\)"
-               1 2 3))
+  ;; --- Custom regexp for Ruff ---
+  (add-to-list 'compilation-error-regexp-alist-alist
+               '(ruff
+                 "^[[:space:]]*--?>[[:space:]]*\\([^:\n]+\\):\\([0-9]+\\):\\([0-9]+\\)"
+                 1 2 3))
 
-(add-to-list 'compilation-error-regexp-alist 'ruff)
-
-
-(defvar-local my/ruff-origin-buffer nil
-  "The original buffer from which Ruff was run.")
+  (add-to-list 'compilation-error-regexp-alist 'ruff)
 
 
-(defun my/ruff--refresh (origin)
-  "Re-run Ruff and refresh ORIGIN buffer."
-  (when (buffer-live-p origin)
-    (with-current-buffer origin
-      (revert-buffer :ignore-auto :noconfirm)
-      (my/ruff-check-buffer))))
+  (defvar-local my/ruff-origin-buffer nil
+    "The original buffer from which Ruff was run.")
 
 
-(defun my/ruff--run-on-file (origin cmd)
-  "Run a Ruff command CMD on ORIGIN buffer's file, then refresh."
-  (let ((file (with-current-buffer origin (buffer-file-name))))
-    (unless file
-      (error "Buffer is not visiting a file"))
+  (defun my/ruff--refresh (origin)
+    "Re-run Ruff and refresh ORIGIN buffer."
+    (when (buffer-live-p origin)
+      (with-current-buffer origin
+        (revert-buffer :ignore-auto :noconfirm)
+        (my/ruff-check-buffer))))
 
-    ;; Save file before running Ruff
-    (with-current-buffer origin
-      (when (buffer-modified-p)
-        (save-buffer)))
+  (defun my/ruff--run-on-file (origin cmd)
+    "Run a Ruff command CMD on ORIGIN buffer's file, then refresh."
+    (let ((file (with-current-buffer origin (buffer-file-name))))
+      (unless file
+        (error "Buffer is not visiting a file"))
 
-    ;; Run command
-    (compile (format "%s %s" cmd (shell-quote-argument file)))
+      ;; Save file before running Ruff
+      (with-current-buffer origin
+        (when (buffer-modified-p)
+          (save-buffer)))
 
-    ;; Refresh afterwards
-    (run-at-time
-     0.3 nil
-     (lambda ()
-       (when (buffer-live-p origin)
-         (with-current-buffer origin
-           (revert-buffer :ignore-auto :noconfirm))
-         (my/ruff--refresh origin))))))
+      ;; Run command synchronously. This pauses Emacs for a few
+      ;; milliseconds, eliminating any race conditions.
+      (call-process-shell-command (format "%s %s" cmd
+                                          (shell-quote-argument file)))
 
-
-(defun my/ruff-open-rule-doc ()
-  "Open Ruff documentation for the rule at point."
-  (interactive)
-  (let* ((sym (thing-at-point 'symbol t))
-         (rule (and sym (upcase sym))))
-    (if (and rule (string-match "^[A-Z]+[0-9]+$" rule))
-        (browse-url
-         (format "https://docs.astral.sh/ruff/rules/%s/" rule))
-      (message "No Ruff rule at point"))))
+      ;; Refresh afterwards immediately without guessing via run-at-time
+      (when (buffer-live-p origin)
+        (with-current-buffer origin
+          (revert-buffer :ignore-auto :noconfirm))
+        (my/ruff--refresh origin))))
 
 
-;;;###autoload
-(defun my/ruff-check-buffer ()
-  "Run `ruff check` on the current file using compilation-mode."
-  (interactive)
-  (let* ((origin (if (derived-mode-p 'compilation-mode)
-                     my/ruff-origin-buffer
-                   (current-buffer)))
-         (file (with-current-buffer origin (buffer-file-name))))
+  (defun my/ruff-open-rule-doc ()
+    "Open Ruff documentation for the rule at point."
+    (interactive)
+    (let* ((sym (thing-at-point 'symbol t))
+           (rule (and sym (upcase sym))))
+      (if (and rule (string-match "^[A-Z]+[0-9]+$" rule))
+          (browse-url
+           (format "https://docs.astral.sh/ruff/rules/%s/" rule))
+        (message "No Ruff rule at point"))))
 
-    (unless file
-      (error "Buffer is not visiting a file"))
+  ;;;###autoload
+  (defun my/ruff-check-buffer ()
+    "Run `ruff check` on the current file using compilation-mode."
+    (interactive)
+    (let* ((origin (if (derived-mode-p 'compilation-mode)
+                       my/ruff-origin-buffer
+                     (current-buffer)))
+           (file (with-current-buffer origin (buffer-file-name))))
 
-    (let* ((default-directory (file-name-directory file))
-           (buf (compilation-start
-                 (format "ruff check --color=never %s"
-                         (shell-quote-argument file))
-                 'compilation-mode
-                 (lambda (_) "*ruff-check*"))))
+      (unless file
+        (error "Buffer is not visiting a file"))
 
-      (pop-to-buffer buf)
+      (let* ((default-directory (file-name-directory file))
+             ;; Tell Emacs to silently kill the stale check process
+             (compilation-always-kill t)
+             (buf (compilation-start
+                   (format "ruff check --color=never %s"
+                           (shell-quote-argument file))
+                   'compilation-mode
+                   (lambda (_) "*ruff-check*"))))
 
-      (with-current-buffer buf
-        (setq-local my/ruff-origin-buffer origin)
-        (setq-local compilation-error-regexp-alist '(ruff))
-        (setq-local next-error-function #'compilation-next-error-function)
+        (pop-to-buffer buf)
 
-        ;; Header
-        (let ((inhibit-read-only t))
-          (goto-char (point-min))
-          (insert
-           "Ruff: n/p navigate | RET jump | g refresh | f fix | M format | w docs | q quit\n\n"))
+        (with-current-buffer buf
+          (setq-local my/ruff-origin-buffer origin)
+          (setq-local compilation-error-regexp-alist '(ruff))
+          (setq-local next-error-function #'compilation-next-error-function)
 
-        ;; Keybindings
-        (let ((map (current-local-map)))
-          (define-key map (kbd "n") #'compilation-next-error)
-          (define-key map (kbd "p") #'compilation-previous-error)
-          (define-key map (kbd "g") #'my/ruff-check-buffer)
-          (define-key map (kbd "f")
-            (lambda ()
-              (interactive)
-              (my/ruff--run-on-file my/ruff-origin-buffer
-                                   "ruff check --fix")))
-          (define-key map (kbd "M")
-            (lambda ()
-              (interactive)
-              (my/ruff--run-on-file my/ruff-origin-buffer
-                                   "ruff format")))
-          (define-key map (kbd "w") #'my/ruff-open-rule-doc)
-          (define-key map (kbd "q") #'quit-window))))))
+          ;; Header
+          (let ((inhibit-read-only t))
+            (goto-char (point-min))
+            (insert
+             "Ruff: n/p navigate | RET jump | g refresh | f fix | M format | w docs | q quit\n\n"))
 
-(provide 'my-ruff)
+          ;; Keybindings
+          (let ((map (current-local-map)))
+            (define-key map (kbd "n") #'compilation-next-error)
+            (define-key map (kbd "p") #'compilation-previous-error)
+            (define-key map (kbd "g") #'my/ruff-check-buffer)
+            (define-key map (kbd "f")
+                        (lambda ()
+                          (interactive)
+                          (my/ruff--run-on-file my/ruff-origin-buffer
+                                                "ruff check --fix")))
+            (define-key map (kbd "M")
+                        (lambda ()
+                          (interactive)
+                          (my/ruff--run-on-file my/ruff-origin-buffer
+                                                "ruff format")))
+            (define-key map (kbd "w") #'my/ruff-open-rule-doc)
+            (define-key map (kbd "q") #'quit-window))))))
+
+  (provide 'my-ruff)
 
 #+end_src
 
