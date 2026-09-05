@@ -1,7 +1,8 @@
 #!/usr/bin/env bats
 
 setup() {
-    EM_WRAP="emacs/dot-local/bin/em_wrap"
+    REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+    EM_WRAP="$REPO_ROOT/emacs/dot-local/bin/em_wrap"
 
     # Create temp directory for mock emacsclient
     MOCK_DIR="$(mktemp -d)"
@@ -46,12 +47,12 @@ teardown() {
 }
 
 @test "bash: EDITOR does not contain LD_PRELOAD or flags" {
-    ! grep "LD_PRELOAD=" bash/dot-bashrc 2>/dev/null || true
-    ! grep -E "export EDITOR=.*(-t|-c|LD_PRELOAD)" bash/dot-bash_profile 2>/dev/null
-    grep -E "export EDITOR=.*em_wrap" bash/dot-bashrc bash/dot-bash_profile
+    ! grep "LD_PRELOAD=" "$REPO_ROOT/bash/dot-bashrc" 2>/dev/null || true
+    ! grep -E "export EDITOR=.*(-t|-c|LD_PRELOAD)" "$REPO_ROOT/bash/dot-bash_profile" 2>/dev/null
+    grep -E "export EDITOR=.*em_wrap" "$REPO_ROOT/bash/dot-bashrc" "$REPO_ROOT/bash/dot-bash_profile"
 }
 
 @test "bash & fish: alias em to em_wrap" {
-    grep -E "alias em=.*em_wrap" bash/dot-bashrc
-    grep -E "alias em.*em_wrap" fish/.config/fish/config.fish
+    grep -E "alias em=.*em_wrap" "$REPO_ROOT/bash/dot-bashrc"
+    grep -E "alias em.*em_wrap" "$REPO_ROOT/fish/.config/fish/config.fish"
 }
