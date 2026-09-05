@@ -779,9 +779,9 @@ export relevant variables.
 #+end_src
 
 *** Paths
-Some systems don't set =~/.local/bin= or =/usr/bin= automatically. The
-former seems a liability for non-interactive use, wheras the latter
-should really always be available.
+Some systems don't set =~/.local/bin= or =/usr/bin= automatically.
+Ensure these directories are always present on PATH for both interactive
+and non-interactive sessions (e.g. tools invoked by Emacs, Git hooks, or scripts).
 
 I also sometimes have a separate =~/bin=; wheras =~.local/bin= is for
 things installed by condax or Pip, =~/bin= is mostly for things I
@@ -792,11 +792,9 @@ compiled locally.
       set -xp PATH /usr/bin
   end
 
-  if status is-interactive
-      for BINDIR in $HOME/.local/bin $HOME/bin
-          if not contains $BINDIR $PATH
-              set -xp PATH $BINDIR
-          end
+  for BINDIR in $HOME/.local/bin $HOME/bin
+      if not contains $BINDIR $PATH
+          set -xp PATH $BINDIR
       end
   end
 #+end_src
