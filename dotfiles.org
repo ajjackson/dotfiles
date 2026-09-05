@@ -720,39 +720,37 @@ colors:
 
 Emacs can require a workaround to deal with glibc incompatibility; see
 corresponding section of Bash config for more info.
-#+begin_src fish :tangle "fish/.local/bin/em_wrap" :mkdirp yes :shebang "#! /usr/bin/env fish"
-  set -x ALTERNATE_EDITOR ''
+#+begin_src sh :tangle "fish/.local/bin/em_wrap" :mkdirp yes :shebang "#!/bin/sh"
+  export ALTERNATE_EDITOR=""
 
-  function em
-      set -l PRELOAD_LIB /usr/lib/libc_malloc_debug.so
-      set -l EC_ARGS
+  PRELOAD_LIB=""
+  for lib in /usr/lib64/libc_malloc_debug.so.0 \
+             /usr/lib/libc_malloc_debug.so \
+             /usr/lib/*-linux-gnu/libc_malloc_debug.so; do
+      if [ -f "$lib" ]; then
+          PRELOAD_LIB="$lib"
+          break
+      fi
+  done
 
-      if set -q INSIDE_EMACS
-          and not set -q EMACS_SERVER_NAME
+  # Server selection if nested in Emacs
+  if [ -n "$INSIDE_EMACS" ]; then
+      if [ -z "$EMACS_SERVER_NAME" ]; then
           echo "em: EMACS_SERVER_NAME not set" >&2
-          return 1
-      end
+          exit 1
+      fi
+      FRAME_ARG="-s $EMACS_SERVER_NAME"
+  elif [ -t 0 ]; then
+      FRAME_ARG="-t"
+  else
+      FRAME_ARG="-c"
+  fi
 
-      if set -q EMACS_SERVER_NAME
-          set -a EC_ARGS -s $EMACS_SERVER_NAME
-      end
-
-      if not set -q INSIDE_EMACS
-          if isatty stdin
-              set -a EC_ARGS -t
-          else
-              set -a EC_ARGS -c  # GUI frame fallback
-          end
-      end
-
-      if test -e $PRELOAD_LIB
-          env LD_PRELOAD=$PRELOAD_LIB emacsclient $EC_ARGS $argv
-      else
-          emacsclient $EC_ARGS $argv
-      end
-  end
-
-  em $argv
+  if [ -n "$PRELOAD_LIB" ]; then
+      exec env LD_PRELOAD="$PRELOAD_LIB" emacsclient $FRAME_ARG "$@"
+  else
+      exec emacsclient $FRAME_ARG "$@"
+  fi
 #+end_src
 
 #+begin_src fish
@@ -1078,19 +1076,12 @@ export relevant variables.
     none is available. This makes opening a new editor instantaneous
     after the first one.
 
-    LD_PRELOAD is needed when using Emacs from conda-forge (built
-    against old libc) on a recent Linux version (built against new
-    libc). Apparently Emacs was pretty much the only program using
-    this deprecated feature! See
+    LD_PRELOAD is handled by the ~em_wrap~ script when using Emacs from
+    conda-forge on a recent Linux version. See
     https://github.com/conda-forge/emacs-feedstock/issues/63
 
     #+BEGIN_SRC bash
-      if [[ -f "/usr/lib64/libc_malloc_debug.so.0" ]]; then
-          export EDITOR="LD_PRELOAD=/usr/lib64/libc_malloc_debug.so.0 emacsclient -t"
-      else
-          export EDITOR="emacsclient -t"
-      fi
-
+      export EDITOR="em_wrap"
       export ALTERNATE_EDITOR=""
     #+END_SRC
 
@@ -1219,7 +1210,7 @@ fi
 
 ***** Shortcuts
 #+BEGIN_SRC bash
-  alias em='${EDITOR}'
+  alias em='em_wrap'
   alias ll='ls -l'
   alias la='ls -a'
 #+END_SRC
