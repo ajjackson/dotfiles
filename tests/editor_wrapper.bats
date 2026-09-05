@@ -1,8 +1,7 @@
 #!/usr/bin/env bats
 
 setup() {
-    # Find tangled em_wrap location (e.g. in emacs/.local/bin or fish/.local/bin)
-    EM_WRAP="$(find . -name em_wrap -type f | head -n 1)"
+    EM_WRAP="emacs/dot-local/bin/em_wrap"
 
     # Create temp directory for mock emacsclient
     MOCK_DIR="$(mktemp -d)"

@@ -713,14 +713,14 @@ colors:
   #+end_src
 * Shells
 
-** Fish
-   :PROPERTIES:
-   :header-args: :tangle "fish/.config/fish/config.fish" :mkdirp yes
-   :END:
+** Editor wrapper
 
-Emacs can require a workaround to deal with glibc incompatibility; see
-corresponding section of Bash config for more info.
-#+begin_src sh :tangle "fish/.local/bin/em_wrap" :mkdirp yes :shebang "#!/bin/sh"
+An ~emacsclient~ wrapper script handles terminal vs GUI frame fallbacks,
+passing server names when running nested inside Emacs, and applying
+glibc malloc debug preloads where needed. Tangled to the ~emacs~ stow package
+so it is linked to =~/.local/bin/em_wrap= whenever emacs dotfiles are stowed.
+
+#+begin_src sh :tangle "emacs/dot-local/bin/em_wrap" :mkdirp yes :shebang "#!/bin/sh"
   export ALTERNATE_EDITOR=""
 
   PRELOAD_LIB=""
@@ -752,6 +752,11 @@ corresponding section of Bash config for more info.
       exec emacsclient $FRAME_ARG "$@"
   fi
 #+end_src
+
+** Fish
+   :PROPERTIES:
+   :header-args: :tangle "fish/.config/fish/config.fish" :mkdirp yes
+   :END:
 
 #+begin_src fish
   if status is-interactive
