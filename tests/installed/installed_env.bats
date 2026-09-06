@@ -1,7 +1,12 @@
 #!/usr/bin/env bats
 
+# Post-installation environment verification tests
+# These tests verify that dotfiles have been properly stowed into $HOME
+
 setup() {
-    REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+    # Resolve repo root relative to this test file
+    # tests/installed/ is two levels deep from repo root
+    REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 }
 
 @test "installed: ~/.local/bin/em_wrap resolves to repo emacs build" {
