@@ -6,6 +6,7 @@ RUN apk add --no-cache \
     emacs-nox \
     fish \
     git \
+    just \
     ncurses \
     parallel \
     py3-pip \

@@ -32,9 +32,9 @@ jobs:
       run: |
         docker exec test_container /home/tester/src/tests/install_emacs.sh
 
-    - name: Run tests with bats
+    - name: Run tests with just
       run: |
-        docker exec test_container sh -c "cd /home/tester/src/tests && bats *.bats --report-formatter tap -j 4"
+        docker exec test_container sh -c "cd /home/tester/src && just test-ci | tee tests/report.tap"
 
     - name: Copy test output
       if: success() || failure()
