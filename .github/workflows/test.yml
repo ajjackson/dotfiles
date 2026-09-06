@@ -34,7 +34,7 @@ jobs:
 
     - name: Run tests with just
       run: |
-        docker exec test_container sh -c "cd /home/tester/src && just test-ci > tests/report.tap"
+        docker exec test_container sh -c "cd /home/tester/src && just test-ci | tee tests/report.tap"
 
     - name: Copy test output
       if: success() || failure()
