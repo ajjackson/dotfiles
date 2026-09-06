@@ -1,23 +1,27 @@
 # Test runner targets for dotfiles
 
-# Run all tests (local development)
+# List available recipes
+default:
+    @just --list
+
+# Run all tests
 test:
     @echo "Running all test suites..."
     just test-static
     just test-unit
     just test-installed
 
-# Run static analysis tests (local development)
+# Run static analysis tests
 test-static:
     @echo "Running static tests..."
     bats tests/static/
 
-# Run unit tests (local development)
+# Run unit tests
 test-unit:
     @echo "Running unit tests..."
     bats tests/unit/
 
-# Run installed environment tests (local development)
+# Run installed environment tests
 test-installed:
     @echo "Running installed environment tests..."
     bats tests/installed/

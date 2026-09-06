@@ -4,9 +4,8 @@
 # These tests verify Emacs packages and features after installation
 
 setup_file() {
-    # Resolve paths relative to this test file
-    # tests/installed/ is two levels deep from repo root
-    REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    # Resolve paths relative to this test file (two levels up from tests/installed/)
+    REPO_ROOT="$(dirname "$(dirname "$BATS_TEST_DIRNAME")")"
     export REPO_ROOT
     export ELISP_TEST_DIR="$REPO_ROOT/tests/elisp"
 

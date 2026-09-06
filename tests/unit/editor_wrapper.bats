@@ -4,9 +4,8 @@
 # These tests use mocked emacsclient to verify behavior without requiring Emacs
 
 setup() {
-    # Resolve repo root relative to this test file
-    # tests/unit/ is two levels deep from repo root
-    REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    # Resolve repo root relative to this test file (two levels up from tests/unit/)
+    REPO_ROOT="$(dirname "$(dirname "$BATS_TEST_DIRNAME")")"
     EM_WRAP="$REPO_ROOT/emacs/dot-local/bin/em_wrap"
 
     # Create temp directory for mock emacsclient

@@ -4,9 +4,8 @@
 # These tests verify git configuration after dotfiles have been stowed
 
 setup() {
-    # Resolve repo root relative to this test file
-    # tests/installed/ is two levels deep from repo root
-    REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    # Resolve repo root relative to this test file (two levels up from tests/installed/)
+    REPO_ROOT="$(dirname "$(dirname "$BATS_TEST_DIRNAME")")"
 }
 
 @test "git: check git aliases have been added" {

@@ -4,9 +4,8 @@
 # These tests validate syntax and structure without requiring installation
 
 setup() {
-    # Resolve repo root relative to this test file
-    # tests/static/ is two levels deep from repo root
-    REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    # Resolve repo root relative to this test file (two levels up from tests/static/)
+    REPO_ROOT="$(dirname "$(dirname "$BATS_TEST_DIRNAME")")"
 }
 
 @test "valid TOML files" {
