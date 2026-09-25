@@ -1826,3 +1826,13 @@ that point comes back to life...
 #+begin_src elisp
 ;; (elpaca-process-queues)
 #+end_src
+
+Prevent byte-compiling because it breaks elpaca
+
+#+begin_src elisp  :tangle "emacs/.emacs.d/init.el" :mkdirp yes
+  ;; Local Variables:
+  ;; no-byte-compile: t
+  ;; no-native-compile: t
+  ;; no-update-autoloads: t
+  ;; End:
+#+end_src
